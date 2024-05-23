@@ -17,7 +17,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "tf_prefix",
-            default_value='""',
+            default_value='sew_',
             description="Prefix for the links and joints in the robot cell",
         )
     )
