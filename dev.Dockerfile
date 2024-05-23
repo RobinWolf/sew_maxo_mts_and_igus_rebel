@@ -42,7 +42,7 @@ FROM sew_description as gazebo_testenviroment
 USER root
 RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-teleop-twist-joy \
     ros-${ROS_DISTRO}-teleop-twist-keyboard \
-    ros-${ROS_DISTRO}-joy \
+    ros-${ROS_DISTRO}-joy* \
     ros-${ROS_DISTRO}-ros-gz \
     ros-${ROS_DISTRO}-gazebo-ros-pkgs
 
@@ -68,7 +68,51 @@ USER $USER
 ##############################################################################
 FROM sew_navigation as sew_mobile_manipulator
 
-#install irc packages from github?
-#needed ros2 control packages?
+# install necessary packages for ros2 control
+USER root
+RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-controller-interface \
+    ros-$ROS_DISTRO-controller-manager \
+    ros-$ROS_DISTRO-hardware-interface \
+    ros-$ROS_DISTRO-pluginlib \
+    ros-$ROS_DISTRO-rclcpp \
+    ros-$ROS_DISTRO-rclcpp-lifecycle \
+    ros-$ROS_DISTRO-ros2-control \
+    ros-$ROS_DISTRO-ros2-controllers \
+    ros-$ROS_DISTRO-rosidl-default-generators \
+    ros-$ROS_DISTRO-std-srvs
+USER $USER
+
+
+# install necessary packages for moveit
+USER root
+RUN DEBIAN_FRONTEND=noninteractive \
+	apt update && apt install -y  \
+    ros-$ROS_DISTRO-moveit  \
+    ros-$ROS_DISTRO-moveit-common  \
+    ros-$ROS_DISTRO-moveit-servo  \
+    ros-$ROS_DISTRO-joint-trajectory-controller  \
+    ros-$ROS_DISTRO-joint-state-broadcaster  \
+    ros-$ROS_DISTRO-controller-manager \
+    ros-$ROS_DISTRO-sensor-msgs-py  \
+    ros-$ROS_DISTRO-rqt-controller-manager
+USER $USER
+
+
+#install dependencies for python interface/ py_dependencies to calculate with affine transformations
+# USER root
+# RUN apt-get update && apt-get install -y pip
+# USER $USER
+# RUN pip install scipy
+
+
+# Build the workspace 
+# RUN cd /home/$USER/ros2_ws/ && \
+#     . /opt/ros/$ROS_DISTRO/setup.sh && \
+#     colcon build --packages-select irc_ros_msgs && \
+#     colcon build --packages-select irc_ros_description && \
+#     colcon build --packages-select irc_ros_moveit_config && \
+#     colcon build --packages-select irc_ros_hardware && \
+#     colcon build --packages-select irc_ros_controllers && \
+#     colcon build --packages-select irc_ros_bringup
 
 #CMD [/bin/bash]
