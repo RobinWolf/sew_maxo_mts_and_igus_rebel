@@ -56,8 +56,10 @@
         >
     </xacro:igus_rebel_6dof>
 
-<!-- call the gazebo macro to parse the  -->
+<!-- call the gazebo macro to add support for gazebo_ros2_control tag inside the igus_rebel_ros2_control.urdf.xacro  -->
+    <xacro:include filename="$(find sew_and_igus_description)/urdf/igus_ros2_control_gazebo_macro.urdf.xacro" />
 
+    <xacro:igus_ros2_control_gazebo />
 
 
 <!--#######################################################################################################################################-->
