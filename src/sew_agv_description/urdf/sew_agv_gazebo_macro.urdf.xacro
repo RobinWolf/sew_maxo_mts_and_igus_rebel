@@ -12,8 +12,8 @@
                 <update_rate>30</update_rate>
                 
                 <!--set wheels-->
-                <left_joint>wheel_left_joint</left_joint>
-                <right_joint>wheel_right_joint</right_joint>
+                <left_joint>sew_wheel_left_joint</left_joint>
+                <right_joint>sew_wheel_right_joint</right_joint>
                 <wheel_separation>0.525</wheel_separation>
                 <wheel_diameter>0.2</wheel_diameter>
 
@@ -23,7 +23,7 @@
                 
                 <!-- Output messages of the plugin gazebo -> ros2-->
                 <odometry_frame>odom</odometry_frame>
-                <robot_base_frame>base_footprint</robot_base_frame>
+                <robot_base_frame>sew_base_footprint</robot_base_frame>
                 <publish_odom>true</publish_odom>
                 <publish_odom_tf>true</publish_odom_tf>
                 <publish_wheel_tf>true</publish_wheel_tf>
@@ -40,23 +40,23 @@
     <!--define gazebo tags for materials, because urdf materialc can not be used in gazebo -->
     <!--#######################################################################################################################################-->
 
-        <gazebo reference="caster_wheel_link">
+        <gazebo reference="sew_caster_wheel_link">
             <material> Gazebo/Black</material>
         </gazebo>
 
-        <gazebo reference="right_wheel_link">
+        <gazebo reference="sew_right_wheel_link">
             <material> Gazebo/Black</material>
         </gazebo>
 
-        <gazebo reference="left_wheel_link">
+        <gazebo reference="sew_left_wheel_link">
             <material> Gazebo/Black</material>
         </gazebo>
 
-        <gazebo reference="body_link">
+        <gazebo reference="sew_body_link">
             <material> Gazebo/Grey</material>
         </gazebo>
 
-        <gazebo reference="lidar_link">
+        <gazebo reference="sew_lidar_link">
             <material> Gazebo/Yellow</material>
         </gazebo>
 
@@ -64,7 +64,7 @@
     <!--set friction of the caster wheel to nearly 0 (for simplicity reasons) -->
     <!--#######################################################################################################################################-->
 
-        <gazebo reference="caster_wheel_link">
+        <gazebo reference="sew_caster_wheel_link">
             <mu1 value="0.001"/>
             <mu2 value="0.001"/>
         </gazebo>
@@ -72,7 +72,7 @@
     <!--#######################################################################################################################################-->
     <!--include lidar sensor simulation on lidar link -->
     <!--#######################################################################################################################################-->
-        <gazebo reference="lidar_link">
+        <gazebo reference="sew_lidar_link">
             <sensor type="ray" name="lidar_1">
                 <pose> 0 0 0 0 0 0 </pose>      <!--define offset to lidar_link frame-->
                 <visualize>true</visualize>

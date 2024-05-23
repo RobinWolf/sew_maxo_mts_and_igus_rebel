@@ -30,7 +30,7 @@
         <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv.ros2_control.urdf.xacro" />
         <!-- ros2 control instance -->
         <xacro:sew_agv_ros2_control
-          use_fake_hardware="${use_fake_hardware}"
+          ros2_control_with_gazebo="${ros2_control_with_gazebo}"
           tf_prefix="${tf_prefix}"
           robot_ip="${robot_ip}"
           robot_ssid="${robot_ssid}"
@@ -41,12 +41,6 @@
 <!--#######################################################################################################################################-->
 <!--load gazebo hardware plugin for ros2_control or standard gazebo diff_drive plugin-->
 <!--#######################################################################################################################################-->
-
-    <xacro:if value="${ros2_control_with_gazebo}">
-        <hardware>
-            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-        </hardware>
-    </xacro:if>
 
     <xacro:if value="${standalone_gazebo}">
         <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_gazebo_macro.urdf.xacro" />
@@ -61,20 +55,20 @@
     
     
     <!--define non physical footprint joint (used in nav2 to determine robot center on the ground)-->
-    <link name="base_footprint"/>
+    <link name="${tf_prefix}base_footprint"/>
 
     <!--base/ main body fixed relative to the footprint , inertial definitions required due to the use in gazebo-->
-    <joint name="base_footprint_joint" type="fixed">
+    <joint name="${tf_prefix}base_footprint_joint" type="fixed">
         <origin rpy="0 0 0" xyz="0 0 0.58"/>
         <axis xyz="0 0 0"/>
-        <parent link="base_footprint"/>
-        <child link="base_link"/>
+        <parent link="${tf_prefix}base_footprint"/>
+        <child link="${tf_prefix}base_link"/>
     </joint>
-    <link name="base_link">
+    <link name="${tf_prefix}base_link">
         <inertial>
             <mass value="250"/> <!--in kg-->
             <origin rpy="0 0 0" xyz="0 0 0"/>
-            <inertia ixx="3.82" ixy="0.0" ixz="0.48" iyy="4.11" iyz="0.0" izz="3.29"/> <!--not realistic!-->
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/> <!--not realistic!-->
         </inertial>
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -93,16 +87,16 @@
     </link>
 
     <!--front wheel / axis should match the rotation axis of the wheel, for simplicity reasons set this to fixed and disable friction in gazebo-->
-    <joint name="caster_wheel_joint" type="fixed">
+    <joint name="${tf_prefix}caster_wheel_joint" type="fixed">
         <origin rpy="1.57079 0 0" xyz="0.290 0 -0.56"/>
         <axis xyz="0 0 0"/>
-        <parent link="base_link"/>
-        <child link="caster_wheel_link"/>
+        <parent link="${tf_prefix}base_link"/>
+        <child link="${tf_prefix}caster_wheel_link"/>
     </joint>
-    <link name="caster_wheel_link" type="wheel">
+    <link name="${tf_prefix}caster_wheel_link" type="wheel">
         <inertial>
             <mass value="2"/>
-            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/> <!--not realistic!-->
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/> <!--not realistic!-->
         </inertial>
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -121,19 +115,18 @@
     </link>
 
     <!--right back wheel / axis shold match the rotation axis of the wheel-->
-    <joint name="wheel_right_joint" type="continuous">
+    <joint name="${tf_prefix}wheel_right_joint" type="continuous">
         <origin rpy="0 0 -1.57079" xyz="-0.225 -0.2625 -0.48"/>
         <limit effort="100.0" velocity="3.5"/>
         <axis xyz="-1 0 0"/>
-        <parent link="base_link"/>
-        <child link="wheel_right_link"/>
-        <joint_properties damping="1" friction="1"/>
+        <parent link="${tf_prefix}base_link"/>
+        <child link="${tf_prefix}wheel_right_link"/>
     </joint>
-    <link name="wheel_right_link" type="wheel">
+    <link name="${tf_prefix}wheel_right_link" type="wheel">
         <inertial>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <mass value="2"/>
-            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/> <!--not realistic!-->
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/> <!--not realistic!-->
         </inertial>
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -152,15 +145,14 @@
     </link>
 
     <!--left back wheel / axis shold match the rotation axis of the wheel-->
-    <joint name="wheel_left_joint" type="continuous">
+    <joint name="${tf_prefix}wheel_left_joint" type="continuous">
         <origin rpy="0 0 1.57079" xyz="-0.225 0.2625 -0.48"/>
         <limit effort="100.0" velocity="3.5"/>
         <axis xyz="1 0 0"/>
-        <parent link="base_link"/>
-        <child link="wheel_left_link"/>
-        <joint_properties damping="5" friction="10"/>
+        <parent link="${tf_prefix}base_link"/>
+        <child link="${tf_prefix}wheel_left_link"/>
     </joint>
-    <link name="wheel_left_link" type="wheel">
+    <link name="${tf_prefix}wheel_left_link" type="wheel">
         <inertial>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <mass value="2"/>
@@ -183,13 +175,13 @@
     </link>
 
     <!--lidar sensor, required due to the use in gazebo-->
-    <joint name="lidar_joint" type="fixed">
+    <joint name="${tf_prefix}lidar_joint" type="fixed">
         <axis xyz="0 0 0"/>
         <origin rpy="0 0 0 " xyz="0.355 0 -0.445"/>
-        <parent link="base_link"/>
-        <child link="lidar_link"/>
+        <parent link="${tf_prefix}base_link"/>
+        <child link="${tf_prefix}lidar_link"/>
     </joint>
-    <link name="lidar_link" type="laser">
+    <link name="${tf_prefix}lidar_link" type="laser">
         <inertial>
             <mass value="1"/>
             <origin rpy="0 0 0" xyz="0 0 0"/>

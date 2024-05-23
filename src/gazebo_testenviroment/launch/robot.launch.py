@@ -9,7 +9,8 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    description_package = "sew_agv_description"
+    #description_package = "sew_agv_description"
+    description_package = "sew_and_igus_description"
     sim_package = "gazebo_testenviroment"
 
     declared_arguments = []
@@ -39,26 +40,62 @@ def generate_launch_description():
             description='Set to "true" if you want to launch rviz gui.'
         )
     )
+    declared_arguments.append(
+    DeclareLaunchArgument('prefix',
+            default_value='igus_',
+            description='Set the prefix for all igus links and joints to avoid name collisions'
+        )
+    )
+    declared_arguments.append(
+    DeclareLaunchArgument('hardware_protocol',
+            default_value='gazebo',
+            description='Select the hardware protocol which should be used for the igus rebel'
+        )
+    )
 
     #init launch arguments, transfer to variables
     world = LaunchConfiguration('world')     # --> seems to be that gazebo uses static_world as default?    
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
     launch_rviz = LaunchConfiguration('launch_rviz')   
+    prefix = LaunchConfiguration('prefix')   
+    hardware_protocol = LaunchConfiguration('hardware_protocol')   
 
 
 
+    #only sew agv
+    # robot_description_content = Command(
+    #     [
+    #         PathJoinSubstitution([FindExecutable(name="xacro")]),
+    #         " ",
+    #         PathJoinSubstitution([FindPackageShare(description_package), "urdf", "sew_agv_model.urdf.xacro"]),
+    #         " ",
+    #         "tf_prefix:=",
+    #         tf_prefix,
+    #         " ",
+    #         "standalone_gazebo:=",
+    #         standalone_gazebo,
+    #     ]
+    # )
+
+    #sew agv and igus rebel arm
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare(description_package), "urdf", "sew_agv_model.urdf.xacro"]),
+            PathJoinSubstitution([FindPackageShare(description_package), "urdf", "sew_and_igus_model.urdf.xacro"]),
             " ",
             "tf_prefix:=",
             tf_prefix,
             " ",
             "standalone_gazebo:=",
             standalone_gazebo,
+            " ",
+            "prefix:=",
+            prefix,
+            " ",
+            "hardware_protocol:=",
+            hardware_protocol,           
         ]
     )
 
