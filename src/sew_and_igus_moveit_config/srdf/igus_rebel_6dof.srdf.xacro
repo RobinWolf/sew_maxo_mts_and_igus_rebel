@@ -3,10 +3,10 @@
 <robot xmlns:xacro="http://wiki.ros.org/xacro"
        name="igus_rebel_6dof" >
   
-    <xacro:arg name="prefix" default="" />
+    <xacro:arg name="prefix" default="igus_" />
+    <xacro:arg name="tf_prefix" default="sew_" />
 
     <group name="rebel_6dof">
-        <link name="world"/>
         <link name="$(arg prefix)base_link"/>
         <link name="$(arg prefix)link_1"/>
         <link name="$(arg prefix)link_2"/>
@@ -21,8 +21,9 @@
         <joint name="$(arg prefix)joint5"/>
         <joint name="$(arg prefix)joint6"/>
         <joint name="$(arg prefix)joint7"/>
-        <chain base_link="world" tip_link="$(arg prefix)link_8"/>
+        <chain base_link="$(arg prefix)base_link" tip_link="$(arg prefix)link_8"/>
     </group>
+
     <group_state name="zero" group="rebel_6dof">
         <joint name="$(arg prefix)joint1" value="0"/>
         <joint name="$(arg prefix)joint2" value="0"/>
@@ -31,7 +32,12 @@
         <joint name="$(arg prefix)joint5" value="0"/>
         <joint name="$(arg prefix)joint6" value="0"/>
     </group_state>
-    <virtual_joint name="world_to_base" type="fixed" parent_frame="world" child_link="$(arg prefix)base_link"/>
+
+    <virtual_joint name="world_to_base" type="fixed" parent_frame="world" child_link="$(arg tf_prefix)base_footprint"/>
+
+    <!--sew to igus connection is not a collision-->
+    <disable_collisions link1="$(arg tf_prefix)base_link" link2="$(arg prefix)base_link" reason="Adjacent"/>
+
     <disable_collisions link1="$(arg prefix)base_link" link2="$(arg prefix)link_1" reason="Adjacent"/>
     <disable_collisions link1="$(arg prefix)gripper_base" link2="$(arg prefix)gripper_mount" reason="Adjacent"/>
     <disable_collisions link1="$(arg prefix)gripper_base" link2="$(arg prefix)link_2" reason="Never"/>
@@ -55,4 +61,5 @@
     <disable_collisions link1="$(arg prefix)link_6" link2="$(arg prefix)link_7" reason="Adjacent"/>
     <disable_collisions link1="$(arg prefix)link_6" link2="$(arg prefix)link_8" reason="Never"/>
     <disable_collisions link1="$(arg prefix)link_7" link2="$(arg prefix)link_8" reason="Adjacent"/>
+
 </robot>
