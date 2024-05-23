@@ -19,7 +19,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "tf_prefix",
             default_value='sew_',
-            description="Prefix for the links and joints in the robot cell",
+            description="Prefix for the links and joints from tha SEW AGV",
         )
     )
     declared_arguments.append(
@@ -62,6 +62,27 @@ def generate_launch_description():
             description="set to true if you want to use a joystick (XBox controller) to move the robot",
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "hardware_protocol",
+            default_value='gazebo',
+            description="select the hardware protocol which should be used by ros2 control resource manager",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "prefix",
+            default_value='igus_',
+            description="set to true if you want to use a joystick (XBox controller) to move the robot",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_rviz",
+            default_value='true',
+            description="set to true if rviz gui should be launched by default",
+        )
+    )
 
 
     #init launch arguments, transfer to variables
@@ -72,6 +93,11 @@ def generate_launch_description():
     generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag')   
     robot_ip = LaunchConfiguration('robot_ip') 
     enable_joystick = LaunchConfiguration('enable_joystick') 
+    prefix = LaunchConfiguration('prefix') 
+    hardware_protocol = LaunchConfiguration('hardware_protocol') 
+    launch_rviz = LaunchConfiguration('launch_rviz') 
+
+
 
 
     #lauch gazebo if launch argument is set to true (without ros2 control)
@@ -83,7 +109,9 @@ def generate_launch_description():
                 "tf_prefix": tf_prefix,
                 "world": world,
                 "standalone_gazebo": standalone_gazebo,
-                'launch_rviz':'true',
+                'launch_rviz': launch_rviz,
+                'prefix': prefix,
+                'hardware_protocol': hardware_protocol,
             }.items(),
     )
 

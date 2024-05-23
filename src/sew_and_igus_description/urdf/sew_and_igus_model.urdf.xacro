@@ -44,7 +44,7 @@
     <xacro:arg name="prefix" default="igus_" />
     <xacro:arg name="continuous_last_joint" default="false" />
     <xacro:arg name="rebel_version" default="01" />
-    <xacro:arg name="hardware_protocol" default="cprcanv2" />
+    <xacro:arg name="hardware_protocol" default="gazebo" />
 
 
 <!-- call the main macro by passing above instanced parameters to build the arm -->
@@ -55,6 +55,10 @@
         hardware_protocol="$(arg hardware_protocol)"
         >
     </xacro:igus_rebel_6dof>
+
+<!-- call the gazebo macro to parse the  -->
+
+
 
 <!--#######################################################################################################################################-->
    <!-- joint which connects the sew agv and the igus arm -->
