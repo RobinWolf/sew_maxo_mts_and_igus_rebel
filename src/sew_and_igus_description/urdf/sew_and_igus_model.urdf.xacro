@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<!--this is the main urdf.xacro file which builds actually the robot model by calling the other macros-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="sew-maxo-mts-agv-with-igus-rebel">
+
+<!--#######################################################################################################################################-->
+   <!-- import sew-macro, define parameters needed inside the macro and load the macro -->
+<!--#######################################################################################################################################-->
+    <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_macro.urdf.xacro"/>
+
+<!-- set parameters defined in sew_agv_macro.urdf.xacro -->
+    <xacro:arg name="tf_prefix" default="sew_"/>
+
+    <!-- ros2_control related parameters -->
+    <xacro:arg name="robot_ip" default="NaN" />
+    <xacro:arg name="robot_ssid" default="NaN" />
+    <xacro:arg name="generate_ros2_control_tag" default="false" />
+
+
+    <!-- simulation related parameters -->
+    <xacro:arg name="use_fake_hardware" default="false" />
+    <xacro:arg name="ros2_control_with_gazebo" default="false" />
+    <xacro:arg name="standalone_gazebo" default="false" />
+ 
+<!-- call the main macro by passing above instanced parameters to build the arm -->
+   
+    <xacro:sew_agv_macro
+        tf_prefix="$(arg tf_prefix)"
+        use_fake_hardware="$(arg use_fake_hardware)"
+        robot_ip="$(arg robot_ip)"
+        robot_ssid="$(arg robot_ssid)"
+        generate_ros2_control_tag="$(arg generate_ros2_control_tag)"
+        standalone_gazebo="$(arg standalone_gazebo)"
+        ros2_control_with_gazebo="$(arg ros2_control_with_gazebo)"
+        >
+    </xacro:sew_agv_macro>
+
+<!--#######################################################################################################################################-->
+   <!-- import igus-macro, define parameters needed inside the macro and load the macro -->
+<!--#######################################################################################################################################-->  
+    <xacro:include filename="$(find irc_ros_description)/urdf/robots/igus_rebel_6dof.macro.xacro" />
+
+<!-- set parameters defined in igus_rebel_6dof.macro.xacro-->
+    <xacro:arg name="prefix" default="igus_" />
+    <xacro:arg name="continuous_last_joint" default="false" />
+    <xacro:arg name="rebel_version" default="01" />
+    <xacro:arg name="hardware_protocol" default="cprcanv2" />
+
+
+<!-- call the main macro by passing above instanced parameters to build the arm -->
+    <xacro:igus_rebel_6dof
+        prefix="$(arg prefix)"
+        continuous_last_joint="$(arg continuous_last_joint)"
+        rebel_version="'$(arg rebel_version)'"
+        hardware_protocol="$(arg hardware_protocol)"
+        >
+    </xacro:igus_rebel_6dof>
+
+<!--#######################################################################################################################################-->
+   <!-- joint which connects the sew agv and the igus arm -->
+<!--#######################################################################################################################################-->  
+
+  <joint name="sew_to_$(arg prefix)base" type="fixed">
+    <parent link="$(arg tf_prefix)base_link" />      
+    <child link = "$(arg prefix)base_link" />   
+    <origin xyz="0 0 0" rpy="0 0 0" />   
+  </joint>
+
+</robot>
