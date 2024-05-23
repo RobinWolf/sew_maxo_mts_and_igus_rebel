@@ -69,5 +69,6 @@ USER $USER
 FROM sew_navigation as sew_mobile_manipulator
 
 #install irc packages from github?
+#needed ros2 control packages?
 
 #CMD [/bin/bash]
