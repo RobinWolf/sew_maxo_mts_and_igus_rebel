@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<!--this is the main urdf.xacro file which builds actually the robot model by calling the other macros-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="sew-maxo-mts-agv">
+
+<!--#######################################################################################################################################-->
+   <!-- import main macro -->
+<!--#######################################################################################################################################-->
+    <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_macro.urdf.xacro"/>
+
+
+<!--#######################################################################################################################################-->
+    <!-- set ros2 parameters, which will passsed to the macros, can be defined in the launch file-->
+<!--#######################################################################################################################################-->
+   <!-- set parameters defined in diy_robotarm_macro.xacro -->
+    <xacro:arg name="tf_prefix" default=""/>
+
+    <!-- ros2_control related parameters -->
+    <xacro:arg name="robot_ip" default="NaN" />
+    <xacro:arg name="robot_ssid" default="NaN" />
+    <xacro:arg name="generate_ros2_control_tag" default="false" />
+
+
+    <!-- simulation related parameters -->
+    <xacro:arg name="use_fake_hardware" default="false" />
+    <xacro:arg name="ros2_control_with_gazebo" default="false" />
+    <xacro:arg name="standalone_gazebo" default="false" />
+
+ 
+<!--#######################################################################################################################################-->
+   <!-- call the main macro by passing above instanced parameters to build the arm -->
+<!--#######################################################################################################################################-->
+   
+    <!--<link name="world"/>-->
+
+    <xacro:sew_agv_macro
+        tf_prefix="$(arg tf_prefix)"
+        use_fake_hardware="$(arg use_fake_hardware)"
+        robot_ip="$(arg robot_ip)"
+        robot_ssid="$(arg robot_ssid)"
+        generate_ros2_control_tag="$(arg generate_ros2_control_tag)"
+        standalone_gazebo="$(arg standalone_gazebo)"
+        ros2_control_with_gazebo="$(arg ros2_control_with_gazebo)"
+        >
+        <!--<origin xyz="0 0 0" rpy="0 0 0" />          position robot relative to the world -->
+    </xacro:sew_agv_macro>
+
+
+</robot>
