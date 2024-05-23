@@ -9,18 +9,16 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    description_package = "sew_and_igus_description"
+    description_package = "sew_agv_description"
     sim_package = "gazebo_testenviroment"
+    driver_package = "TODO"
     navigation_package = "sew_agv_navigation"
-    igus_bringup_package = "irc_ros_bringup"
-    moveit_package = "irc_ros_moveit_config"
 
     declared_arguments = []
-    #arguments to configure sew agv
     declared_arguments.append(
         DeclareLaunchArgument(
             "tf_prefix",
-            default_value='""',
+            default_value='sew_',
             description="Prefix for the links and joints in the robot cell",
         )
     )
@@ -64,110 +62,9 @@ def generate_launch_description():
             description="set to true if you want to use a joystick (XBox controller) to move the robot",
         )
     )
-    #arguments to confugure igus rebel
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "namespace",
-            default_value=""
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "prefix",
-            default_value=""
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "controller_manager_name",
-            default_value=[LaunchConfiguration("namespace"), "/controller_manager"],
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "default_urdf_filename",
-            default_value=[LaunchConfiguration("robot_name"), ".urdf.xacro"],
-            description="Name of the robot description file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "default_robot_controller_filename",
-            default_value=["controller_", LaunchConfiguration("robot_name"), ".yaml"],
-            description="Name of the robot controller configuration file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-          "use_rviz",
-            default_value="true",
-            choices=["0", "1", "false", "true", "False", "True"],
-            description="Whether to start rviz with the launch file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "rviz_file",
-            default_value=default_rviz_file,
-            description="The path to the rviz configuration file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "robot_name",
-            default_value="igus_rebel_6dof",
-            choices=["igus_rebel_6dof", "igus_rebel_4dof"],
-            description="Which igus ReBeL type to use",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "robot_urdf",
-            default_value=default_urdf_file,
-            description="Path of the robot description file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "robot_controller_config",
-            default_value=default_robot_controller_file,
-            description="Path of the robot's description file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "rebel_version",
-            default_value="01",
-            choices=["pre", "00", "01"],
-            description="Which version of the igus ReBeL to use",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "gripper",
-            default_value="none",
-            choices=["none", "schmalz_ecbpmi", "ext_dio_gripper"],
-            description="Which gripper to attach to the flange",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "namespace",
-            default_value="",
-            description="The namespace to use for all nodes started by this launch file",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "hardware_protocol",
-            default_value="cprcanv2",
-            choices=["mock_hardware", "gazebo", "cprcanv2", "cri"],
-            description="Which hardware protocol or mock hardware should be used",
-        )
-    )
+
 
     #init launch arguments, transfer to variables
-    #sew arguments
     world = LaunchConfiguration('world')        
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
@@ -175,79 +72,57 @@ def generate_launch_description():
     generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag')   
     robot_ip = LaunchConfiguration('robot_ip') 
     enable_joystick = LaunchConfiguration('enable_joystick') 
-    #igus arguments
-    namespace = LaunchConfiguration("namespace")
-    prefix = LaunchConfiguration("prefix")
-    controller_manager_name = LaunchConfiguration("controller_manager_name")
-    use_rviz = LaunchConfiguration("use_rviz")
-    rviz_file = LaunchConfiguration("rviz_file")
-    robot_urdf = LaunchConfiguration("robot_urdf")
-    robot_controller_config_file = LaunchConfiguration("robot_controller_config")
-    rebel_version = LaunchConfiguration("rebel_version")
-    gripper = LaunchConfiguration("gripper")
-    hardware_protocol = LaunchConfiguration("hardware_protocol")
 
 
-    #define paths to div. config files
-    default_rviz_file = PathJoinSubstitution([FindPackageShare("irc_ros_description"), "rviz", "rebel.rviz"])
-    default_urdf_file = PathJoinSubstitution([FindPackageShare("irc_ros_description"),"urdf", LaunchConfiguration("default_urdf_filename")])
-    default_robot_controller_file = PathJoinSubstitution([FindPackageShare("irc_ros_bringup"),"config", LaunchConfiguration("default_robot_controller_filename")])
-    
-
-    #launch sew agv bringup    
-    load_agv = IncludeLaunchDescription(
+    #lauch gazebo if launch argument is set to true (without ros2 control)
+    load_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [PathJoinSubstitution([FindPackageShare(navigation_package), 'launch']), "/bringup.launch.py"]),
+            [PathJoinSubstitution([FindPackageShare(sim_package), 'launch']), "/robot.launch.py"]),
+            condition=IfCondition(standalone_gazebo),
             launch_arguments={
                 "tf_prefix": tf_prefix,
                 "world": world,
                 "standalone_gazebo": standalone_gazebo,
-                'launch_rviz':'false',
+                'launch_rviz':'true',
+            }.items(),
+    )
+
+  
+    #launch real drivers if launch argument is set to true (with ros2 control)
+    # load_real_drivers =     load_joystick = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [PathJoinSubstitution([FindPackageShare(driver_package), 'launch']), "/drivers.launch.py"]),
+    #         condition=IfCondition(generate_ros2_control_tag),
+    #         launch_arguments={
+    #             "tf_prefix": tf_prefix,
+    #             "robot_ip": robot_ip,
+    #             'launch_rviz':'false',
+    #         }.items(),
+    # )
+
+
+    #launch real sensors such as lidar --> currently not feasable dur to lack in hardware support
+    #load_lidar = 
+
+    #launch the joystick
+    load_joystick = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [PathJoinSubstitution([FindPackageShare(navigation_package), 'launch']), "/joystick.launch.py"]),
+            condition=IfCondition(enable_joystick),
+            launch_arguments={
                 "use_sim_time": use_sim_time,
-                "generate_ros2_control_tag": generate_ros2_control_tag,
-                "robot_ip": robot_ip,
-                "enable_joystick": enable_joystick,
             }.items(),
     )
 
-    #include igus bringup --> maybe already included in moveit launch?
-    load_igus_bringup = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [PathJoinSubstitution([FindPackageShare(igus_bringup_package), 'launch']), "/rebel.launch.py"]),
-            launch_arguments={
-                "namespace": namespace,
-                "prefix": prefix,
-                "controller_manager_name": controller_manager_name,
-                "use_rviz": use_rviz,
-                "rviz_file": rviz_file,
-                "robot_urdf": robot_urdf,
-                "robot_controller_config_file": robot_controller_config_file,
-                "rebel_version": rebel_version,
-                "gripper": gripper,
-                "hardware_protocol":hardware_protocol,
-            }.items(),
-    )
+    #launch igus driver with gazebo ros2 control hardware interface
+    
 
-    #include igus moveit
-    load_moveit = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [PathJoinSubstitution([FindPackageShare(moveit_package), 'launch']), "/rebel.launch.py"]),
-            launch_arguments={
-                "use_rviz": use_rviz,
-                "gripper": gripper,
-                "namespace":namespace,
-                "prefix": prefix,
-                "controller_manager_name": controller_manager_name,
-                "hardware_protocol": hardware_protocol,
-                "rebel_version": rebel_version,
-            }.items(),
-    )
 
 
     nodes_to_start = [
-        load_agv,
-        load_igus_bringup,
-        load_moveit
+        load_gazebo,
+        load_joystick
     ]
+    #load_real_drivers,
 
     return LaunchDescription(declared_arguments + nodes_to_start)
