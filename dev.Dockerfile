@@ -71,15 +71,15 @@ FROM sew_navigation as sew_mobile_manipulator
 # install necessary packages for ros2 control
 USER root
 RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-controller-interface \
-    ros-$ROS_DISTRO-controller-manager \
-    ros-$ROS_DISTRO-hardware-interface \
-    ros-$ROS_DISTRO-pluginlib \
-    ros-$ROS_DISTRO-rclcpp \
-    ros-$ROS_DISTRO-rclcpp-lifecycle \
-    ros-$ROS_DISTRO-ros2-control \
-    ros-$ROS_DISTRO-ros2-controllers \
-    ros-$ROS_DISTRO-rosidl-default-generators \
-    ros-$ROS_DISTRO-std-srvs
+    ros-${ROS_DISTRO}-controller-manager \
+    ros-${ROS_DISTRO}-hardware-interface \
+    ros-${ROS_DISTRO}-pluginlib \
+    ros-${ROS_DISTRO}-rclcpp \
+    ros-${ROS_DISTRO}-rclcpp-lifecycle \
+    ros-${ROS_DISTRO}-ros2-control \
+    ros-${ROS_DISTRO}-ros2-controllers \
+    ros-${ROS_DISTRO}-rosidl-default-generators \
+    ros-${ROS_DISTRO}-std-srvs
 USER $USER
 
 
@@ -87,14 +87,14 @@ USER $USER
 USER root
 RUN DEBIAN_FRONTEND=noninteractive \
 	apt update && apt install -y  \
-    ros-$ROS_DISTRO-moveit  \
-    ros-$ROS_DISTRO-moveit-common  \
-    ros-$ROS_DISTRO-moveit-servo  \
-    ros-$ROS_DISTRO-joint-trajectory-controller  \
-    ros-$ROS_DISTRO-joint-state-broadcaster  \
-    ros-$ROS_DISTRO-controller-manager \
-    ros-$ROS_DISTRO-sensor-msgs-py  \
-    ros-$ROS_DISTRO-rqt-controller-manager
+    ros-${ROS_DISTRO}-moveit  \
+    ros-${ROS_DISTRO}-moveit-common  \
+    ros-${ROS_DISTRO}-moveit-servo  \
+    ros-${ROS_DISTRO}-joint-trajectory-controller  \
+    ros-${ROS_DISTRO}-joint-state-broadcaster  \
+    ros-${ROS_DISTRO}-controller-manager \
+    ros-${ROS_DISTRO}-sensor-msgs-py  \
+    ros-${ROS_DISTRO}-rqt-controller-manager
 USER $USER
 
 
