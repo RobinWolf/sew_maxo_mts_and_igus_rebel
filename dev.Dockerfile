@@ -63,5 +63,11 @@ RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-navigation2 \
 
 USER $USER
 
+##############################################################################
+##                      5. stage: set up igus packages                      ##
+##############################################################################
+FROM sew_navigation as sew_mobile_manipulator
+
+#install irc packages from github?
 
 #CMD [/bin/bash]

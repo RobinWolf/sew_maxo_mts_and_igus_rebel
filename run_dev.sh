@@ -15,7 +15,7 @@ docker build \
   --build-arg UID="$uid" \
   --build-arg GID="$gid" \
   -f dev.Dockerfile \
-  -t logilab-gazebo-dev/ros-render:"$ROS_DISTRO" .
+  -t logilab-sew_mobile_manipulator-dev/ros-render:"$ROS_DISTRO" .
 
 ##############################################################################
 ##                            Run the container                             ##
@@ -24,7 +24,7 @@ SRC_CONTAINER=/home/logilab/ros2_ws/src
 SRC_HOST="$(pwd)"/src                           #use a src on host machine to develop code, mout it to the container to run code inside the container
 
 docker run \
-  --name sew_navigation \
+  --name sew_mobile_manipulator \
   --rm \
   -it \
   --net=host \
@@ -32,7 +32,7 @@ docker run \
   -e DISPLAY="$DISPLAY" \
   -v /dev:/dev \
   --privileged \
-  logilab-gazebo-dev/ros-render:"$ROS_DISTRO"
+  logilab-sew_mobile_manipulator-dev/ros-render:"$ROS_DISTRO"
 
 # display, joystick 0 input and network acess added to the container
 # permissions for the joystick on the host machine should be: crw-rw-r--+ 1 robin robin 13, 0 Mai  6 15:21 /dev/input/js0
