@@ -6,7 +6,7 @@ amcl:     ## https://docs.nav2.org/configuration/packages/configuring-amcl.html 
     alpha3: 0.05
     alpha4: 0.05
     alpha5: 0.05
-    base_frame_id: "base_footprint" #
+    base_frame_id: "sew_base_footprint" #
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
@@ -55,7 +55,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: False # reconfigured in launch file with launch argument
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: sew_base_link
     odom_topic: /odom
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -166,7 +166,7 @@ local_costmap:
       update_frequency: 10.0
       publish_frequency: 1.0
       global_frame: map #odom
-      robot_base_frame: base_footprint
+      robot_base_frame: sew_base_footprint
       footprint_padding: 0.01
       footprint:  "[ [0.425,0.3],[-0.425,0.3],[-0.425,-0.3],[0.425,-0.3] ]"
       rolling_window: true
@@ -184,7 +184,7 @@ local_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          #sensor_frame: "lidar_link"
+          #sensor_frame: "sew_lidar_link"
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer" # calculates the exponential cost around obstacles
         cost_scaling_factor: 5.0
@@ -205,7 +205,7 @@ global_costmap:
       update_frequency: 0.4
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_footprint
+      robot_base_frame: sew_base_footprint
       footprint_padding: 0.01
       footprint:  "[ [0.425,0.3],[-0.425,0.3],[-0.425,-0.3],[0.425,-0.3] ]"
       use_sim_time: True
@@ -275,7 +275,7 @@ behavior_server:  ## https://docs.nav2.org/configuration/packages/configuring-be
       plugin: "nav2_behaviors/AssistedTeleop"
     local_frame: odom
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: sew_base_link
     transform_timeout: 0.1
     simulate_ahead_time: 2.0
     max_rotational_vel: 0.5
@@ -312,7 +312,7 @@ recoveries_server:  ##called in bt_navigator
     wait:
       plugin: "nav2_recoveries/Wait"
     global_frame: odom
-    robot_base_frame: base_link
+    robot_base_frame: sew_base_link
     transform_timeout: 0.1
     use_sim_time: False  # reconfigured in launch file with launch argument
     simulate_ahead_time: 2.0

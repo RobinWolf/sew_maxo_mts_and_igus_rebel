@@ -25,6 +25,13 @@ def generate_launch_description():
 
     declared_arguments = []
     declared_arguments.append(
+        DeclareLaunchArgument(
+            "tf_prefix",
+            default_value='sew_',
+            description="Prefix for the links and joints of the agv to avoid name collisions",
+        )
+    )
+    declared_arguments.append(
     DeclareLaunchArgument('use_sim_time',
             default_value='true',
             description='Set to "true" if you want to use the gazebo clock, set to "false" if you use real hardware.'
@@ -56,6 +63,7 @@ def generate_launch_description():
     )
 
     #init launch arguments, transfer to variables
+    tf_prefix = LaunchConfiguration('tf_prefix')
     use_sim_time = LaunchConfiguration('use_sim_time')
     autostart = LaunchConfiguration('autostart')  
     param_dir = LaunchConfiguration('param_dir')    
@@ -66,7 +74,8 @@ def generate_launch_description():
     #modify default navigation.yaml file with parameters passed as lauch arguments (only for map_server to change maps)
     param_substitutions = {
         'use_sim_time' : use_sim_time,
-        'yaml_filename': map_yaml_file}
+        'yaml_filename': map_yaml_file,
+        'tf_prefix' : tf_prefix}        #prefix substitution does not work, please redefine manually in the navigation.yaml file
 
     configured_param_dir = RewrittenYaml(
         source_file=param_dir,
