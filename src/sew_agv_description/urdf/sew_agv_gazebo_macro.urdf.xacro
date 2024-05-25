@@ -94,7 +94,7 @@
                         <argument>~/out:=scan</argument>        <!--define output topic-->
                     </ros>
                     <output_type>sensor_msgs/LaserScan</output_type>
-                    <frame_name>lidar_link</frame_name>
+                    <frame_name>sew_lidar_link</frame_name>
                 </plugin>
             </sensor>
         </gazebo>
