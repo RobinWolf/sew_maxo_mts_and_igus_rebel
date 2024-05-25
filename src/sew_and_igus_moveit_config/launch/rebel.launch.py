@@ -38,9 +38,10 @@ def opaque_test(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration("use_sim_time")
 
     moveit_package = "sew_and_igus_moveit_config"
+    description_package = "sew_and_igus_description"
     
     rviz_file = PathJoinSubstitution(
-        [FindPackageShare("irc_ros_moveit_config"), "rviz", "moveit.rviz"]
+        [FindPackageShare(moveit_package), "rviz", "moveit_rviz.rviz"]
     )
 
     ros2_controllers_file = PathJoinSubstitution(
@@ -60,7 +61,7 @@ def opaque_test(context, *args, **kwargs):
 
     joint_limits_file = PathJoinSubstitution(
         [
-            FindPackageShare("irc_ros_moveit_config"),
+            FindPackageShare(moveit_package),
             "config",
             "joint_limits.yaml",
         ]
@@ -74,9 +75,9 @@ def opaque_test(context, *args, **kwargs):
     )
     robot_description_file = PathJoinSubstitution(
         [
-            FindPackageShare("irc_ros_description"),
+            FindPackageShare(description_package),
             "urdf",
-            "igus_rebel_6dof.urdf.xacro",
+            "sew_and_igus_model.urdf.xacro",
         ]
     )
     robot_description = Command(
@@ -96,8 +97,8 @@ def opaque_test(context, *args, **kwargs):
     )
     robot_description_semantic_file = PathJoinSubstitution(
         [
-            FindPackageShare("irc_ros_moveit_config"),
-            "config",
+            FindPackageShare(moveit_package),
+            "srdf",
             "igus_rebel_6dof.srdf.xacro",
         ]
     )
@@ -113,7 +114,7 @@ def opaque_test(context, *args, **kwargs):
 
     # Requires the os.path.join way instead of PathJoinSubstitution here
     controllers_file = os.path.join(
-        get_package_share_directory("irc_ros_moveit_config"),
+        get_package_share_directory(moveit_package),
         "config",
         "controllers.yaml",
     )
@@ -129,7 +130,7 @@ def opaque_test(context, *args, **kwargs):
 
     ompl_file = PathJoinSubstitution(
         [
-            FindPackageShare("irc_ros_moveit_config"),
+            FindPackageShare(moveit_package),
             "config",
             "ompl.yaml",
         ]
@@ -143,7 +144,7 @@ def opaque_test(context, *args, **kwargs):
 
     robot_description_kinematics_file = PathJoinSubstitution(
         [
-            FindPackageShare("irc_ros_moveit_config"),
+            FindPackageShare(moveit_package),
             "config",
             "kinematics.yaml",
         ]
@@ -202,8 +203,9 @@ def opaque_test(context, *args, **kwargs):
     for d in moveit_args_not_concatenated:
         moveit_args.update(d)
 
-    #print(moveit_args)
 
+
+    # Nodes to launch
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
@@ -225,15 +227,6 @@ def opaque_test(context, *args, **kwargs):
         ],
     )
 
-    # robot_state_publisher = Node(   #already started by gazebo
-    #     package="robot_state_publisher",
-    #     executable="robot_state_publisher",
-    #     name="robot_state_publisher",
-    #     namespace=namespace,
-    #     parameters=[
-    #         moveit_args,
-    #     ],
-    # )
 
     joint_state_broadcaster_node = Node(
         package="controller_manager",
@@ -249,30 +242,17 @@ def opaque_test(context, *args, **kwargs):
         arguments=["rebel_6dof_controller", "-c", controller_manager_name],
     )
 
-    # irc_ros_bringup_launch_dir = PathJoinSubstitution(
-    #     [
-    #         FindPackageShare("irc_ros_bringup"),
-    #         "launch",
-    #     ]
-    # )
-    # additional_controllers = IncludeLaunchDescription(  # only for real hardware, can be deleted here
-    #     PythonLaunchDescriptionSource(
-    #         [irc_ros_bringup_launch_dir, "/additional_controllers.launch.py"]
-    #     ),
-    # )
-
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
         name="rviz2",
+        arguments=["-d", rviz_file],
         parameters=[
-            # Passing the entire dict to rviz results in an error with the joint limits
             {"robot_description": robot_description},
             {'use_sim_time': use_sim_time},
         ],
         condition=IfCondition(use_rviz),
     )
-#        arguments=["-d", rviz_file],
 
     return [
         move_group_node,
@@ -280,7 +260,7 @@ def opaque_test(context, *args, **kwargs):
         joint_state_broadcaster_node,
         rebel_6dof_controller_node,
         rviz_node,
-    ]#        robot_state_publisher,        additional_controllers,
+    ]
 
 
 
