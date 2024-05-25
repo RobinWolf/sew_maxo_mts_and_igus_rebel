@@ -1,5 +1,6 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -9,9 +10,8 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    description_package = "sew_agv_description"
     sim_package = "gazebo_testenviroment"
-    driver_package = "TODO"
+    igus_moveit_package = "sew_and_igus_moveit_config"
     navigation_package = "sew_agv_navigation"
 
     declared_arguments = []
@@ -43,20 +43,6 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "generate_ros2_control_tag",
-            default_value='false',
-            description="launch the drivers that connect to the real hardware via IP",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "robot_ip",
-            default_value='TODO',
-            description="the IP the real robot can be pinged",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
             "enable_joystick",
             default_value='true',
             description="set to true if you want to use a joystick (XBox controller) to move the robot",
@@ -83,6 +69,27 @@ def generate_launch_description():
             description="set to true if rviz gui should be launched by default",
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_mapping",
+            default_value='false',
+            description="set to true if you want to launch the slam toolbox for creating a new map",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_navigation",
+            default_value='false',
+            description="set to true if you want to launch navigation",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_moveit",
+            default_value='true',
+            description="set to true if you want to launch moveit for the igus arm",
+        )
+    )
 
 
     #init launch arguments, transfer to variables
@@ -90,13 +97,13 @@ def generate_launch_description():
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
     use_sim_time = LaunchConfiguration('use_sim_time')   
-    generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag')   
-    robot_ip = LaunchConfiguration('robot_ip') 
     enable_joystick = LaunchConfiguration('enable_joystick') 
     prefix = LaunchConfiguration('prefix') 
     hardware_protocol = LaunchConfiguration('hardware_protocol') 
     launch_rviz = LaunchConfiguration('launch_rviz') 
-
+    launch_mapping = LaunchConfiguration('launch_mapping')
+    launch_navigation = LaunchConfiguration('launch_navigation')
+    launch_moveit = LaunchConfiguration('launch_moveit')
 
 
 
@@ -109,28 +116,10 @@ def generate_launch_description():
                 "tf_prefix": tf_prefix,
                 "world": world,
                 "standalone_gazebo": standalone_gazebo,
-                'launch_rviz': launch_rviz,
                 'prefix': prefix,
                 'hardware_protocol': hardware_protocol,
             }.items(),
     )
-
-  
-    #launch real drivers if launch argument is set to true (with ros2 control)
-    # load_real_drivers =     load_joystick = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(
-    #         [PathJoinSubstitution([FindPackageShare(driver_package), 'launch']), "/drivers.launch.py"]),
-    #         condition=IfCondition(generate_ros2_control_tag),
-    #         launch_arguments={
-    #             "tf_prefix": tf_prefix,
-    #             "robot_ip": robot_ip,
-    #             'launch_rviz':'false',
-    #         }.items(),
-    # )
-
-
-    #launch real sensors such as lidar --> currently not feasable dur to lack in hardware support
-    #load_lidar = 
 
     #launch the joystick
     load_joystick = IncludeLaunchDescription(
@@ -142,15 +131,52 @@ def generate_launch_description():
             }.items(),
     )
 
-    #launch igus driver with gazebo ros2 control hardware interface
-    
+    #launch igus driver with gazebo ros2 control hardware interface and moveit if launch argument is set to true
+    load_igus = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [PathJoinSubstitution([FindPackageShare(igus_moveit_package), 'launch']), "/controller_and_moveit.launch.py"]),
+            condition=IfCondition(launch_moveit),
+            launch_arguments={
+                "use_sim_time": use_sim_time,
+                "launch_rviz" : launch_rviz
+            }.items(),
+    )
 
+    #launch navigation if launch launch argument is set to true
+    load_navigation = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [PathJoinSubstitution([FindPackageShare(navigation_package), 'launch']), "/navigation.launch.py"]),
+            condition=IfCondition(launch_navigation),
+            launch_arguments={
+                "use_sim_time": use_sim_time,
+                "launch_rviz" : launch_rviz
+            }.items(),
+    )
+    # delay_load_navigation = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=load_navigation,
+    #         on_exit=[load_gazebo],
+    #     )
+    # )
+
+    #launch mapping if launch argument is set to true
+    load_mapping = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [PathJoinSubstitution([FindPackageShare(navigation_package), 'launch']), "/mapping.launch.py"]),
+            condition=IfCondition(launch_mapping),
+            launch_arguments={
+                "use_sim_time": use_sim_time,
+                "launch_rviz" : launch_rviz
+            }.items(),
+    )
 
 
     nodes_to_start = [
         load_gazebo,
-        load_joystick
+        load_joystick,
+        load_igus,
+        load_mapping,
+        load_navigation,
     ]
-    #load_real_drivers,
 
     return LaunchDescription(declared_arguments + nodes_to_start)

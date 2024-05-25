@@ -35,8 +35,8 @@ def generate_launch_description():
         )
     )
     declared_arguments.append(
-    DeclareLaunchArgument('launch_rviz',
-            default_value='true',
+    DeclareLaunchArgument('launch_rviz_gazebo',
+            default_value="false",
             description='Set to "true" if you want to launch rviz gui.'
         )
     )
@@ -57,26 +57,10 @@ def generate_launch_description():
     world = LaunchConfiguration('world')     # --> seems to be that gazebo uses static_world as default?    
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
-    launch_rviz = LaunchConfiguration('launch_rviz')   
+    launch_rviz = LaunchConfiguration('launch_rviz_gazebo')   
     prefix = LaunchConfiguration('prefix')   
     hardware_protocol = LaunchConfiguration('hardware_protocol')   
 
-
-
-    #only sew agv
-    # robot_description_content = Command(
-    #     [
-    #         PathJoinSubstitution([FindExecutable(name="xacro")]),
-    #         " ",
-    #         PathJoinSubstitution([FindPackageShare(description_package), "urdf", "sew_agv_model.urdf.xacro"]),
-    #         " ",
-    #         "tf_prefix:=",
-    #         tf_prefix,
-    #         " ",
-    #         "standalone_gazebo:=",
-    #         standalone_gazebo,
-    #     ]
-    # )
 
     #sew agv and igus rebel arm
     robot_description_content = Command(
