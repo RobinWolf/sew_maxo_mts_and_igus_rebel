@@ -37,17 +37,16 @@ def opaque_test(context, *args, **kwargs):
     rebel_version = LaunchConfiguration("rebel_version")
 
     moveit_package = "sew_and_igus_moveit_config"
-
+    
     rviz_file = PathJoinSubstitution(
         [FindPackageShare("irc_ros_moveit_config"), "rviz", "moveit.rviz"]
     )
 
-    #rewrite namespace and prefix in ros2_controllers.yaml (defining all of the ros2 controllers)
     ros2_controllers_file = PathJoinSubstitution(
         [
             FindPackageShare(moveit_package),
             "config",
-            "ros2_controllers.yaml",
+            "ros2_controllers_simulation.yaml",
         ]
     )
     ros2_controllers = ReplaceString(
@@ -58,10 +57,9 @@ def opaque_test(context, *args, **kwargs):
         },
     )
 
-    #rewrite namespace and prefix in joint_limits.yaml (reference for move_group to calculate trajectories)
     joint_limits_file = PathJoinSubstitution(
         [
-            FindPackageShare(moveit_package),
+            FindPackageShare("irc_ros_moveit_config"),
             "config",
             "joint_limits.yaml",
         ]
@@ -73,29 +71,11 @@ def opaque_test(context, *args, **kwargs):
             "<prefix>": prefix,
         },
     )
-
-    #rewrite namespace and prefix in controllers.yaml (defining the ros2_controller and its connection to the moveit action follow_joint_trajectory)
-    ros2_controllers_file = PathJoinSubstitution(
-        [
-            FindPackageShare(moveit_package),
-            "config",
-            "ros2_controllers.yaml",
-        ]
-    )
-    ros2_controllers = ReplaceString(
-        source_file=ros2_controllers_file,
-        replacements={
-            "<namespace>": namespace,
-            "<prefix>": prefix,
-        },
-    )
-
-    #load robot description --> maybe add parametes as launch configuration that they can be passed from the command line
     robot_description_file = PathJoinSubstitution(
         [
-            FindPackageShare("sew_and_igus_description"),
+            FindPackageShare("irc_ros_description"),
             "urdf",
-            "sew_and_igus_model.urdf.xacro",
+            "igus_rebel_6dof.urdf.xacro",
         ]
     )
     robot_description = Command(
@@ -113,12 +93,10 @@ def opaque_test(context, *args, **kwargs):
             rebel_version,
         ]
     )
-
-    #load semantic robot description used for collision detechtion while path planning
     robot_description_semantic_file = PathJoinSubstitution(
         [
-            FindPackageShare(moveit_package),
-            "srdf",
+            FindPackageShare("irc_ros_moveit_config"),
+            "config",
             "igus_rebel_6dof.srdf.xacro",
         ]
     )
@@ -129,19 +107,8 @@ def opaque_test(context, *args, **kwargs):
             robot_description_semantic_file,
             " prefix:=",
             prefix,
-            " tf_prefix:=",
-            "sew_",                         #parametrize tf_prefix
         ]
     )
-
-
-
-
-
-
-
-
-
 
     # Requires the os.path.join way instead of PathJoinSubstitution here
     controllers_file = os.path.join(
@@ -190,10 +157,17 @@ def opaque_test(context, *args, **kwargs):
 
     planning_pipeline = {
         "move_group": {
+            # TODO: Copied from UR ROS2 for testing purposes, update configuration for the rebel
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
         },
+        # "move_group": {
+        #     "planning_plugin": "pilz_industrial_motion_planner/CommandPlanner",
+        #     "request_adapters": "default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints",
+        #     "default_planner_config": "PTP",
+        #     "capabilities": "pilz_industrial_motion_planner/MoveGroupSequenceAction pilz_industrial_motion_planner/MoveGroupSequenceService",
+        # },
     }
 
     planning_scene_monitor_parameters = {
@@ -226,6 +200,8 @@ def opaque_test(context, *args, **kwargs):
     moveit_args = dict()
     for d in moveit_args_not_concatenated:
         moveit_args.update(d)
+
+    #print(moveit_args)
 
     move_group_node = Node(
         package="moveit_ros_move_group",
@@ -297,12 +273,12 @@ def opaque_test(context, *args, **kwargs):
     return [
         move_group_node,
         control_node,
-        robot_state_publisher,
         joint_state_broadcaster_node,
         rebel_6dof_controller_node,
         additional_controllers,
         rviz_node,
-    ]
+    ]#        robot_state_publisher,
+
 
 
 def generate_launch_description():
@@ -310,7 +286,7 @@ def generate_launch_description():
     prefix_arg = DeclareLaunchArgument("prefix", default_value="igus_")
     controller_manager_name_arg = DeclareLaunchArgument(
         "controller_manager_name",
-        default_value=[LaunchConfiguration("namespace"), "/controller_manager_simulation"],
+        default_value=[LaunchConfiguration("namespace"), "/controller_manager"],
     )
     use_rviz_arg = DeclareLaunchArgument(
         "use_rviz",
@@ -331,12 +307,12 @@ def generate_launch_description():
     )
     launch_dio_controller_arg = DeclareLaunchArgument(
         "launch_dio_controller",
-        default_value="true",
+        default_value="false",
         description="Whether to launch the DIO controller",
     )
     hardware_protocol_arg = DeclareLaunchArgument(
         "hardware_protocol",
-        default_value="mock_hardware",
+        default_value="gazebo",
         choices=["mock_hardware", "gazebo", "cprcanv2", "cri"],
         description="Which hardware protocol or mock hardware should be used",
     )

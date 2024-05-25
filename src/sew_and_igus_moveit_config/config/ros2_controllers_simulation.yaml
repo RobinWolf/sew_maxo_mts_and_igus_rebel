@@ -1,7 +1,7 @@
 # This config file is used by ros2_control
 controller_manager:
   ros__parameters:
-    update_rate: 100  # Hz
+    update_rate: 50  # Hz
 
     rebel_6dof_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -18,15 +18,16 @@ controller_manager:
     ecbpmi_controller:
       type: irc_ros_controllers/EcbpmiController
 
+# auto override of the interface names does not work properly with gazebo ros2 control
 rebel_6dof_controller:
   ros__parameters:
     joints:
-      - <prefix>joint1
-      - <prefix>joint2
-      - <prefix>joint3
-      - <prefix>joint4
-      - <prefix>joint5
-      - <prefix>joint6
+      - igus_joint1
+      - igus_joint2
+      - igus_joint3
+      - igus_joint4
+      - igus_joint5
+      - igus_joint6
     command_interfaces:
       - position
     state_interfaces:
