@@ -27,6 +27,7 @@ install(DIRECTORY
   config
   srdf
   launch
+  rviz
   DESTINATION share/${PROJECT_NAME}/
 )
 ament_package()

@@ -265,7 +265,6 @@ def opaque_test(context, *args, **kwargs):
         package="rviz2",
         executable="rviz2",
         name="rviz2",
-        arguments=["-d", rviz_file],
         parameters=[
             # Passing the entire dict to rviz results in an error with the joint limits
             {"robot_description": robot_description},
@@ -273,6 +272,7 @@ def opaque_test(context, *args, **kwargs):
         ],
         condition=IfCondition(use_rviz),
     )
+#        arguments=["-d", rviz_file],
 
     return [
         move_group_node,
