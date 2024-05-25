@@ -310,7 +310,7 @@ def generate_launch_description():
     prefix_arg = DeclareLaunchArgument("prefix", default_value="igus_")
     controller_manager_name_arg = DeclareLaunchArgument(
         "controller_manager_name",
-        default_value=[LaunchConfiguration("namespace"), "/controller_manager"],
+        default_value=[LaunchConfiguration("namespace"), "/controller_manager_simulation"],
     )
     use_rviz_arg = DeclareLaunchArgument(
         "use_rviz",
