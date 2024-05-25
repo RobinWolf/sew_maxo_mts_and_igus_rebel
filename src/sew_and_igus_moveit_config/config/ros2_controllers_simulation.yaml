@@ -34,52 +34,52 @@ rebel_6dof_controller:
       - position
       - velocity
 
-dio_controller:
-  ros__parameters:
-    digital_inputs: 
-      - <prefix>dio_arm/digital_input_0
-      - <prefix>dio_arm/digital_input_1
-      - <prefix>dio_base/digital_input_0
-      - <prefix>dio_base/digital_input_1
-      - <prefix>dio_base/digital_input_2
-      - <prefix>dio_base/digital_input_3
-      - <prefix>dio_base/digital_input_4
-      - <prefix>dio_base/digital_input_5
-      - <prefix>dio_base/digital_input_6
+# dio_controller:
+#   ros__parameters:
+#     digital_inputs: 
+#       - <prefix>dio_arm/digital_input_0
+#       - <prefix>dio_arm/digital_input_1
+#       - <prefix>dio_base/digital_input_0
+#       - <prefix>dio_base/digital_input_1
+#       - <prefix>dio_base/digital_input_2
+#       - <prefix>dio_base/digital_input_3
+#       - <prefix>dio_base/digital_input_4
+#       - <prefix>dio_base/digital_input_5
+#       - <prefix>dio_base/digital_input_6
 
-    digital_outputs:
-      - <prefix>dio_arm/digital_output_0
-      - <prefix>dio_arm/digital_output_1
-      - <prefix>dio_base/digital_output_0
-      - <prefix>dio_base/digital_output_1
-      - <prefix>dio_base/digital_output_2
-      - <prefix>dio_base/digital_output_3
-      - <prefix>dio_base/digital_output_4
-      - <prefix>dio_base/digital_output_5
-      - <prefix>dio_base/digital_output_6
+#     digital_outputs:
+#       - <prefix>dio_arm/digital_output_0
+#       - <prefix>dio_arm/digital_output_1
+#       - <prefix>dio_base/digital_output_0
+#       - <prefix>dio_base/digital_output_1
+#       - <prefix>dio_base/digital_output_2
+#       - <prefix>dio_base/digital_output_3
+#       - <prefix>dio_base/digital_output_4
+#       - <prefix>dio_base/digital_output_5
+#       - <prefix>dio_base/digital_output_6
 
-external_dio_controller:
-  ros__parameters:
-    digital_inputs: 
-      - <prefix>dio_ext/digital_input_0
-      - <prefix>dio_ext/digital_input_1
-      - <prefix>dio_ext/digital_input_2
-      - <prefix>dio_ext/digital_input_3
-      - <prefix>dio_ext/digital_input_4
-      - <prefix>dio_ext/digital_input_5
-      - <prefix>dio_ext/digital_input_6
-    digital_outputs:
-      - <prefix>dio_ext/digital_output_0
-      - <prefix>dio_ext/digital_output_1
-      - <prefix>dio_ext/digital_output_2
-      - <prefix>dio_ext/digital_output_3
-      - <prefix>dio_ext/digital_output_4
-      - <prefix>dio_ext/digital_output_5
-      - <prefix>dio_ext/digital_output_6
+# external_dio_controller:
+#   ros__parameters:
+#     digital_inputs: 
+#       - <prefix>dio_ext/digital_input_0
+#       - <prefix>dio_ext/digital_input_1
+#       - <prefix>dio_ext/digital_input_2
+#       - <prefix>dio_ext/digital_input_3
+#       - <prefix>dio_ext/digital_input_4
+#       - <prefix>dio_ext/digital_input_5
+#       - <prefix>dio_ext/digital_input_6
+#     digital_outputs:
+#       - <prefix>dio_ext/digital_output_0
+#       - <prefix>dio_ext/digital_output_1
+#       - <prefix>dio_ext/digital_output_2
+#       - <prefix>dio_ext/digital_output_3
+#       - <prefix>dio_ext/digital_output_4
+#       - <prefix>dio_ext/digital_output_5
+#       - <prefix>dio_ext/digital_output_6
 
-ecbpmi_controller:
-  ros__parameters:
-    output_grip: <prefix>dio_arm/digital_output_0
-    output_release: <prefix>dio_arm/digital_output_1
-    input_grasped: <prefix>dio_arm/digital_input_0
+# ecbpmi_controller:
+#   ros__parameters:
+#     output_grip: <prefix>dio_arm/digital_output_0
+#     output_release: <prefix>dio_arm/digital_output_1
+#     input_grasped: <prefix>dio_arm/digital_input_0
  
