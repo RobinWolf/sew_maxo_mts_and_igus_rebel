@@ -35,6 +35,7 @@ def opaque_test(context, *args, **kwargs):
     controller_manager_name = LaunchConfiguration("controller_manager_name")
     hardware_protocol = LaunchConfiguration("hardware_protocol")
     rebel_version = LaunchConfiguration("rebel_version")
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     moveit_package = "sew_and_igus_moveit_config"
     
@@ -209,6 +210,7 @@ def opaque_test(context, *args, **kwargs):
         namespace=namespace,
         parameters=[
             moveit_args,
+            {'use_sim_time': use_sim_time}
         ],
     )
 
@@ -219,18 +221,19 @@ def opaque_test(context, *args, **kwargs):
         parameters=[
             moveit_args,
             ros2_controllers,
+            {'use_sim_time': use_sim_time}
         ],
     )
 
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        namespace=namespace,
-        parameters=[
-            moveit_args,
-        ],
-    )
+    # robot_state_publisher = Node(   #already started by gazebo
+    #     package="robot_state_publisher",
+    #     executable="robot_state_publisher",
+    #     name="robot_state_publisher",
+    #     namespace=namespace,
+    #     parameters=[
+    #         moveit_args,
+    #     ],
+    # )
 
     joint_state_broadcaster_node = Node(
         package="controller_manager",
@@ -246,17 +249,17 @@ def opaque_test(context, *args, **kwargs):
         arguments=["rebel_6dof_controller", "-c", controller_manager_name],
     )
 
-    irc_ros_bringup_launch_dir = PathJoinSubstitution(
-        [
-            FindPackageShare("irc_ros_bringup"),
-            "launch",
-        ]
-    )
-    additional_controllers = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [irc_ros_bringup_launch_dir, "/additional_controllers.launch.py"]
-        ),
-    )
+    # irc_ros_bringup_launch_dir = PathJoinSubstitution(
+    #     [
+    #         FindPackageShare("irc_ros_bringup"),
+    #         "launch",
+    #     ]
+    # )
+    # additional_controllers = IncludeLaunchDescription(  # only for real hardware, can be deleted here
+    #     PythonLaunchDescriptionSource(
+    #         [irc_ros_bringup_launch_dir, "/additional_controllers.launch.py"]
+    #     ),
+    # )
 
     rviz_node = Node(
         package="rviz2",
@@ -266,6 +269,7 @@ def opaque_test(context, *args, **kwargs):
         parameters=[
             # Passing the entire dict to rviz results in an error with the joint limits
             {"robot_description": robot_description},
+            {'use_sim_time': use_sim_time},
         ],
         condition=IfCondition(use_rviz),
     )
@@ -275,9 +279,9 @@ def opaque_test(context, *args, **kwargs):
         control_node,
         joint_state_broadcaster_node,
         rebel_6dof_controller_node,
-        additional_controllers,
         rviz_node,
-    ]#        robot_state_publisher,
+    ]#        robot_state_publisher,        additional_controllers,
+
 
 
 
@@ -322,6 +326,11 @@ def generate_launch_description():
         choices=["pre", "00", "01"],
         description="Which version of the igus ReBeL to use",
     )
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Set to "true" if you want to use the gazebo clock, set to "fasle" if you use real hardware.'
+        )
 
     ld = LaunchDescription()
 
@@ -334,6 +343,8 @@ def generate_launch_description():
     ld.add_action(launch_dio_controller_arg)
     ld.add_action(hardware_protocol_arg)
     ld.add_action(rebel_version_arg)
+    ld.add_action(use_sim_time_arg)
+
 
     ld.add_action(OpaqueFunction(function=opaque_test))
 
