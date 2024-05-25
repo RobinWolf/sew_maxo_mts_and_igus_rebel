@@ -34,7 +34,6 @@
             </plugin>    
         </gazebo>
 
-        <!--later add ros2 control plugin : https://www.youtube.com/watch?v=4QKsDf1c4hc&list=PLunhqkrRNRhYAffV8JDiFOatQXuU-NnxT&index=12-->
 
     <!--#######################################################################################################################################-->
     <!--define gazebo tags for materials, because urdf materialc can not be used in gazebo -->
