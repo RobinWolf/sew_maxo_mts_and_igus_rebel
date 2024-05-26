@@ -34,7 +34,7 @@
     </group_state>
 
     
-    <virtual_joint name="world_to_base" type="fixed" parent_frame="world" child_link="$(arg tf_prefix)base_footprint"/>
+    <!--<virtual_joint name="world_to_base" type="fixed" parent_frame="world" child_link="$(arg tf_prefix)base_footprint"/>-->
 
     <!--sew to igus connection is not a collision-->
     <disable_collisions link1="$(arg tf_prefix)base_link" link2="$(arg prefix)base_link" reason="Adjacent"/>
