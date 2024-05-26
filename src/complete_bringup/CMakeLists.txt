@@ -26,6 +26,7 @@ endif()
 # add custom directories to install them while buildung
 install(DIRECTORY
   launch
+  rviz
   DESTINATION share/${PROJECT_NAME}/
 )
 

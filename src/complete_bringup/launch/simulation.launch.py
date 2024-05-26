@@ -1,10 +1,8 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler
-from launch.event_handlers import OnProcessExit
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.descriptions import ParameterValue
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 
@@ -13,6 +11,7 @@ def generate_launch_description():
     sim_package = "gazebo_testenviroment"
     igus_moveit_package = "sew_and_igus_moveit_config"
     navigation_package = "sew_agv_navigation"
+    bringup_package = "complete_bringup"
 
     declared_arguments = []
     declared_arguments.append(
@@ -64,13 +63,6 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "launch_rviz",
-            default_value='true',
-            description="set to true if rviz gui should be launched by default",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
             "launch_mapping",
             default_value='false',
             description="set to true if you want to launch the slam toolbox for creating a new map",
@@ -79,7 +71,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "launch_navigation",
-            default_value='false',
+            default_value='true',
             description="set to true if you want to launch navigation",
         )
     )
@@ -88,6 +80,20 @@ def generate_launch_description():
             "launch_moveit",
             default_value='true',
             description="set to true if you want to launch moveit for the igus arm",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_seperate_rviz",
+            default_value='false',
+            description="set to true if seperate rviz guis for navigationa and moveit should be launched by default",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_rviz",
+            default_value='true',
+            description="set to true if one rviz gui for all (moveit and navigation) should be launched by default",
         )
     )
 
@@ -100,7 +106,8 @@ def generate_launch_description():
     enable_joystick = LaunchConfiguration('enable_joystick') 
     prefix = LaunchConfiguration('prefix') 
     hardware_protocol = LaunchConfiguration('hardware_protocol') 
-    launch_rviz = LaunchConfiguration('launch_rviz') 
+    launch_rviz = LaunchConfiguration('launch_rviz')
+    launch_seperate_rviz = LaunchConfiguration('launch_seperate_rviz') 
     launch_mapping = LaunchConfiguration('launch_mapping')
     launch_navigation = LaunchConfiguration('launch_navigation')
     launch_moveit = LaunchConfiguration('launch_moveit')
@@ -138,8 +145,12 @@ def generate_launch_description():
             condition=IfCondition(launch_moveit),
             launch_arguments={
                 "use_sim_time": use_sim_time,
-                "launch_rviz" : launch_rviz
+                "launch_rviz" : launch_seperate_rviz
             }.items(),
+    )
+    delay_load_igus = TimerAction(
+        period=15.0,  # Delay period in seconds
+        actions=[load_igus]
     )
 
     #launch navigation if launch launch argument is set to true
@@ -149,15 +160,13 @@ def generate_launch_description():
             condition=IfCondition(launch_navigation),
             launch_arguments={
                 "use_sim_time": use_sim_time,
-                "launch_rviz" : launch_rviz
+                "launch_rviz" : launch_seperate_rviz
             }.items(),
     )
-    # delay_load_navigation = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=load_navigation,
-    #         on_exit=[load_gazebo],
-    #     )
-    # )
+    delay_load_navigation = TimerAction(
+        period=17.0,  # Delay period in seconds
+        actions=[load_navigation]
+    )
 
     #launch mapping if launch argument is set to true
     load_mapping = IncludeLaunchDescription(
@@ -166,17 +175,40 @@ def generate_launch_description():
             condition=IfCondition(launch_mapping),
             launch_arguments={
                 "use_sim_time": use_sim_time,
-                "launch_rviz" : launch_rviz
+                "launch_rviz" : launch_seperate_rviz
             }.items(),
+    )
+    delay_load_mapping = TimerAction(
+        period=17.0,
+        actions=[load_mapping]
+    )
+
+    #launch whole rviz node with stored config
+    rviz_config_file = PathJoinSubstitution([FindPackageShare(bringup_package), "rviz", "moveit_and_nav2.rviz"]) # define path to rviz-config file
+
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        #condition=IfCondition(launch_rviz)
+    )
+    delay_rviz_node= TimerAction(
+        period=20.0,
+        actions=[rviz_node]
     )
 
 
+    #use delays to ensure that gazebo server is launched first, if not you will suffer from unpredictable problems!
+    #gazebo and joystick -> moveit -> mapping or navigation -> rviz
     nodes_to_start = [
         load_gazebo,
         load_joystick,
-        load_igus,
-        load_mapping,
-        load_navigation,
+        delay_load_igus,
+        delay_load_mapping,
+        delay_load_navigation,
+        delay_rviz_node,
     ]
 
     return LaunchDescription(declared_arguments + nodes_to_start)
