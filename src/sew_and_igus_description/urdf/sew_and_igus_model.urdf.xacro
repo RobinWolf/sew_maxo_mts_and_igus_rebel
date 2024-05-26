@@ -58,9 +58,11 @@
 
 <!-- call the gazebo macro to add support for gazebo_ros2_control tag inside the igus_rebel_ros2_control.urdf.xacro  -->
     <xacro:include filename="$(find sew_and_igus_description)/urdf/igus_ros2_control_gazebo_macro.urdf.xacro" />
-
     <xacro:igus_ros2_control_gazebo />
 
+<!-- call the depth camera sensor plugin (mounted on tcp od the igus robot)-->
+    <xacro:include filename="$(find sew_and_igus_description)/urdf/gazebo_depth_camera_macro.urdf.xacro" />
+    <xacro:igus_depth_camera_gazebo prefix="$(arg prefix)"/>
 
 <!--#######################################################################################################################################-->
    <!-- joint which connects the sew agv and the igus arm -->
