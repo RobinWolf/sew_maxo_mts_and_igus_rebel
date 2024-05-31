@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'sew_agv_application'
+package_name = 'sew_agv_clients'
 
 setup(
     name=package_name,
@@ -22,7 +22,7 @@ setup(
     #define here executables you want to call from the commamnd line. This are usual your applications
     entry_points={                                                     
         'console_scripts': [                    
-            'action_client = sew_agv_application.action_client:main',  
+            'action_client = sew_agv_clients.action_client:main',  
         ],
     },
 )
