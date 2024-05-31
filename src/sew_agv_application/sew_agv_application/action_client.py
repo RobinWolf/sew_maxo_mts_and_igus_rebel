@@ -29,7 +29,7 @@ def main(args=None):    # node gestartet, indem objekt initialisiert wird
 
     action_client = myActionClient()
 
-    future = action_client.send_goal('map',(-3.7,3.7,0.0))    ##Werte an send-goal methode übergeben
+    future = action_client.send_goal('map',(0.0,-2.0,0.0))    ##Werte an send-goal methode übergeben
 
     rclpy.spin_until_future_complete(action_client, future)
 
