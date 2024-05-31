@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 #import clients
-from sew_agv_clients.sew_agv_clients.agv import AGVClient
+from sew_agv_clients.agv import AGVClient
 
 
 def main():
@@ -13,11 +13,11 @@ def main():
     # initialize/ bring up node with agv clients
     agv = AGVClient()
 
-    # call method from client class
-    goal_accepted = agv.check_nav_goal('map',[1,1,0])
+    # call method from client class (string frameID, float64 pose[x,y,w])
+    goal_accepted = agv.check_nav_goal('map',[1.0,0.0,0.0])
     print('goal accepted: ',goal_accepted)
 
-    error_code = agv.move_to_nav_goal('map',[1,1,0])
+    error_code = agv.move_to_nav_goal('map',[1.0,0.0,0.0])
     print('Navigation Return Error Code:', error_code)
 
 

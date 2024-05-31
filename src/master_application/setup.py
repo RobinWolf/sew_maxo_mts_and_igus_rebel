@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'test = master_application.test_agv_client:main'
         ],
     },
 )
