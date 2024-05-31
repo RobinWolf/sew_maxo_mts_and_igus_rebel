@@ -17,7 +17,7 @@ class AGVClient(Node):
         self.get_logger().info("nav_to_pose_clinet action available")
 
 
-    def send_nav_goal(self, frameID, pose):
+    def move_to_nav_goal(self, frameID, pose):
         """
         string frameID: frame where the pose is given in e.g. 'map'
         list pose [x,y,w]: position and quarternion angle (rad) of the goal
