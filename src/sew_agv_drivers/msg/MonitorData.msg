@@ -1,0 +1,13 @@
+Header header
+uint8 part_data
+uint16 in_station
+uint8 in_station_state
+uint16 transponder
+uint16 transponder_distance
+uint16 v_track
+uint16 v_track_distance
+uint16 actual_speed
+uint16 target_speed
+uint16 speed_limit
+uint16 charging_state
+uint16 power

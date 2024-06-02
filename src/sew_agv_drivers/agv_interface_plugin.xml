@@ -1,0 +1,13 @@
+<!--definition of the library and controller’s class-->
+<!--name defines the controller’s type when the controller manager searches for it-->
+<!--name and type must match the definition at bottom of src/esp32_interface.cpp (look for the namespaces)-->
+
+<library path="agv_interface_plugin">
+  <class name="agv_driver/AGVHardware"            
+         type="agv_driver::AGVHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+		ROS2 Control System Driver for SEW AGV.
+    </description>
+  </class>
+</library>
