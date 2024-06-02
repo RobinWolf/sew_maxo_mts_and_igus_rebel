@@ -13,6 +13,7 @@ def generate_launch_description():
     navigation_package = "sew_agv_navigation"
     bringup_package = "complete_bringup"
     driver_package = "sew_agv_drivers"
+    description_package = "sew_and_igus_description"
 
     declared_arguments = []
     declared_arguments.append(
@@ -192,6 +193,9 @@ def generate_launch_description():
             condition=IfCondition(launch_moveit),
             launch_arguments={
                 "use_sim_time": use_sim_time,
+                "standalone_gazebo": standalone_gazebo,
+                "generate_ros2_control_tag": generate_ros2_control_tag,
+                "ros2_control_with_gazebo": ros2_control_with_gazebo,
                 "launch_rviz" : launch_seperate_rviz
             }.items(),
     )
@@ -230,7 +234,7 @@ def generate_launch_description():
         actions=[load_mapping]
     )
 
-    #launch whole rviz node with stored config
+    #launch whole rviz node with stored config and motion planning parameters
     rviz_config_file = PathJoinSubstitution([FindPackageShare(bringup_package), "rviz", "moveit_and_nav2.rviz"]) # define path to rviz-config file
 
     rviz_node = Node(
@@ -239,6 +243,9 @@ def generate_launch_description():
         name="rviz2",
         output="log",
         arguments=["-d", rviz_config_file],
+        parameters=[
+            {'use_sim_time': use_sim_time},
+        ],
         condition=IfCondition(launch_complete_rviz)
     )
     delay_rviz_node= TimerAction(

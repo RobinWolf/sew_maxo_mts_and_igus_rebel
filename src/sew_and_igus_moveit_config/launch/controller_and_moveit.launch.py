@@ -176,17 +176,10 @@ def opaque_test(context, *args, **kwargs):
 
     planning_pipeline = {
         "move_group": {
-            # TODO: Copied from UR ROS2 for testing purposes, update configuration for the rebel
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
         },
-        # "move_group": {
-        #     "planning_plugin": "pilz_industrial_motion_planner/CommandPlanner",
-        #     "request_adapters": "default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints",
-        #     "default_planner_config": "PTP",
-        #     "capabilities": "pilz_industrial_motion_planner/MoveGroupSequenceAction pilz_industrial_motion_planner/MoveGroupSequenceService",
-        # },
     }
 
     planning_scene_monitor_parameters = {
@@ -212,7 +205,6 @@ def opaque_test(context, *args, **kwargs):
             "publish_transforms_updates": True,
         },
         ompl,
-        # {"planning_pipeline": {"planning_plugin": "ompl_rrt_star"}},
     ]
 
     # Concatenate all dictionaries together, else moveitpy won't read all parameters
@@ -233,24 +225,25 @@ def opaque_test(context, *args, **kwargs):
         ],
     )
 
-    control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        namespace=namespace,
-        parameters=[
-            moveit_args,
-            ros2_controllers,
-            {'use_sim_time': use_sim_time}
-        ],
-    )
+    # only launch with real hardware -> TODO
+    # control_node = Node(
+    #     package="controller_manager",
+    #     executable="ros2_control_node",
+    #     namespace=namespace,
+    #     parameters=[
+    #         moveit_args,
+    #         ros2_controllers,
+    #         {'use_sim_time': use_sim_time}
+    #     ],
+    # )
 
 
-    joint_state_broadcaster_node = Node(
-        package="controller_manager",
-        executable="spawner",
-        namespace=namespace,
-        arguments=["joint_state_broadcaster", "-c", controller_manager_name],
-    )
+    # joint_state_broadcaster_node = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     namespace=namespace,
+    #     arguments=["joint_state_broadcaster", "-c", controller_manager_name],
+    # )
 
     rebel_6dof_controller_node = Node(
         package="controller_manager",
@@ -273,8 +266,6 @@ def opaque_test(context, *args, **kwargs):
 
     return [
         move_group_node,
-        control_node,
-        joint_state_broadcaster_node,
         rebel_6dof_controller_node,
         rviz_node,
     ]
