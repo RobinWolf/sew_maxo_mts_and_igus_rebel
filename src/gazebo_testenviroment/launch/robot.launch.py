@@ -29,6 +29,20 @@ def generate_launch_description():
         )
     )
     declared_arguments.append(
+        DeclareLaunchArgument(
+            "generate_ros2_control_tag",
+            default_value='false',
+            description="TODO",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "ros2_control_with_gazebo",
+            default_value='false',
+            description="TODO",
+        )
+    )
+    declared_arguments.append(
     DeclareLaunchArgument('world',
             default_value='src/gazebo_testenviroment/worlds/static_world_2404.world',
             description='Specify the world which should be loaded in Gazebo'
@@ -60,7 +74,8 @@ def generate_launch_description():
     launch_rviz = LaunchConfiguration('launch_rviz_gazebo')   
     prefix = LaunchConfiguration('prefix')   
     hardware_protocol = LaunchConfiguration('hardware_protocol')   
-
+    generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag') 
+    ros2_control_with_gazebo = LaunchConfiguration("ros2_control_with_gazebo")
 
     #sew agv and igus rebel arm
     robot_description_content = Command(
@@ -75,11 +90,17 @@ def generate_launch_description():
             "standalone_gazebo:=",
             standalone_gazebo,
             " ",
+            "generate_ros2_control_tag:=",
+            generate_ros2_control_tag,
+            " ",
+            "ros2_control_with_gazebo:=",
+            ros2_control_with_gazebo,
             "prefix:=",
             prefix,
             " ",
             "hardware_protocol:=",
-            hardware_protocol,           
+            hardware_protocol,
+
         ]
     )
 
