@@ -95,6 +95,7 @@ def generate_launch_description():
             " ",
             "ros2_control_with_gazebo:=",
             ros2_control_with_gazebo,
+            " ",
             "prefix:=",
             prefix,
             " ",
