@@ -17,8 +17,7 @@
     standalone_gazebo:=false
     ros2_control_with_gazebo:=false
     use_fake_hardware:=false
-    robot_ip
-    robot_ssid"
+    robot_ip"
   >
 
 <!--#######################################################################################################################################-->
@@ -27,24 +26,33 @@
 
     <xacro:if value="${generate_ros2_control_tag}">
         <!-- ros2 control include -->
-        <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv.ros2_control.urdf.xacro" />
+        <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_ros2_control.urdf.xacro" />
         <!-- ros2 control instance -->
         <xacro:sew_agv_ros2_control
           ros2_control_with_gazebo="${ros2_control_with_gazebo}"
+          use_fake_hardware="${use_fake_hardware}"
           tf_prefix="${tf_prefix}"
-          robot_ip="${robot_ip}"
-          robot_ssid="${robot_ssid}"
+          agv_ip="${robot_ip}"
         />
     </xacro:if>
 
 
 <!--#######################################################################################################################################-->
-<!--load gazebo hardware plugin for ros2_control or standard gazebo diff_drive plugin-->
+<!--load standard gazebo diff_drive plugin-->
 <!--#######################################################################################################################################-->
 
     <xacro:if value="${standalone_gazebo}">
         <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_gazebo_macro.urdf.xacro" />
-        <xacro:sew_agv_gazebo/>
+        <xacro:sew_agv_gazebo tf_prefix="${tf_prefix}"/>
+    </xacro:if>
+
+<!--#######################################################################################################################################-->
+<!--load gazebo hardware plugin for ros2_control diff_drive plugin-->
+<!--#######################################################################################################################################-->
+
+    <xacro:if value="${ros2_control_with_gazebo}">
+        <xacro:include filename="$(find sew_agv_description)/urdf/sew_agv_ros2_control_gazebo_macro.urdf.xacro" />
+        <xacro:sew_ros2_control_gazebo tf_prefix="${tf_prefix}"/>
     </xacro:if>
 
 

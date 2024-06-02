@@ -1,7 +1,0 @@
-    TODO
-    
-    <xacro:if value="${ros2_control_with_gazebo}">
-        <hardware>
-            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-        </hardware>
-    </xacro:if>

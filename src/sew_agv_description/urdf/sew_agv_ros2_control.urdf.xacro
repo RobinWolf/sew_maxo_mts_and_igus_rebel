@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--#######################################################################################################################################-->
+<!--define parameters for ros2_control configuration-->
+<!--#######################################################################################################################################-->
+    <xacro:macro name="sew_agv_ros2_control" params="
+        name:='sew_hardware_interface',
+        use_fake_hardware:=false
+        mock_sensor_commands:=false
+        initial_positions:=${dict(sew_wheel_left_joint=0.0,sew_wheel_right_joint=0.0)}
+        initial_velocity:=${dict(sew_wheel_left_joint=0.0,sew_wheel_right_joint=0.0)}
+        tf_prefix
+        agv_ip
+        ros2_control_with_gazebo:=false
+        ">
+
+<!--#######################################################################################################################################-->
+<!--build ros2_control hardware configuration, these parameters are stored in info_ and get called in the agv_driver -->
+<!--#######################################################################################################################################-->
+        <ros2_control name="${name}" type="system"> <!--System means that there is a complex multi-axis hardware (read and write capabilities)-->
+        <!--load hardware or simulation plugins-->
+            <hardware>
+                <xacro:if value="${use_fake_hardware}">
+                   <plugin>mock_components/GenericSystem</plugin>
+                   <param name="mock_sensor_commands">${mock_sensor_commands}</param>
+                   <param name="state_following_offset">0.0</param>
+                </xacro:if>
+                <!--load gazebo plugin-->
+                <xacro:if value="${ros2_control_with_gazebo}">
+                    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+                </xacro:if>
+                <!--unless no simulation is required, use real hardware-->
+                <xacro:unless value="${use_fake_hardware}">
+                    <xacro:unless value="${ros2_control_with_gazebo}">
+                        <plugin>agv_driver/AGVHardware</plugin>    <!--call our plugin for interfacing with AGV (this is the Driver!)-->
+                        <param name="agv_ip">${agv_ip}</param>
+                        <param name="tf_prefix">${tf_prefix}</param>
+                    </xacro:unless>
+                </xacro:unless>
+            </hardware>
+                
+
+            <!--define interfaces for each joint-->
+            <joint name="${tf_prefix}wheel_left_joint">
+                <!--define command interface Pc-to-AGV-->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <!--define state interface AGV-to-PC-->
+                <state_interface name="position">
+                    <!-- initial position for the FakeSystem and simulation -->
+                    <param name="initial_value">${initial_positions["sew_wheel_left_joint"]}</param>
+                </state_interface>
+                <state_interface name="velocity">
+                 <!-- initial position for the FakeSystem and simulation -->
+                    <param name="initial_value">${initial_velocity["sew_wheel_left_joint"]}</param>
+                </state_interface>
+            </joint>
+
+            <joint name="${tf_prefix}wheel_right_joint">
+                <!--define command interface Pc-to-AGV-->
+                <command_interface name="velocity">
+                    <param name="min">-10</param>
+                    <param name="max">10</param>
+                </command_interface>
+                <!--define state interface AGV-to-PC-->
+                <state_interface name="position">
+                    <!-- initial position for the FakeSystem and simulation -->
+                    <param name="initial_value">${initial_positions["sew_wheel_right_joint"]}</param>
+                </state_interface>
+                <state_interface name="velocity">
+                 <!-- initial position for the FakeSystem and simulation -->
+                    <param name="initial_value">${initial_velocity["sew_wheel_right_joint"]}</param>
+                </state_interface>
+            </joint>
+
+            
+        </ros2_control>
+    </xacro:macro>
+</robot>
+    

@@ -1,41 +1,19 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="sew_agv_gazebo" params="tf_prefix">
-
+    <xacro:macro name="sew_ros2_control_gazebo" params="tf_prefix">
 
     <!--#######################################################################################################################################-->
-    <!--set up the diff_drive plugin controller from gazebo, NOT ros2_control -> maybe change when ros2_control available -->
+    <!--set up the ros2 control plugin for the sew diff drive controller-->
     <!--#######################################################################################################################################-->
-        <gazebo>
-            <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
-
-                <update_rate>30</update_rate>
-                
-                <!--set wheels-->
-                <left_joint>sew_wheel_left_joint</left_joint>
-                <right_joint>sew_wheel_right_joint</right_joint>
-                <wheel_separation>0.525</wheel_separation>
-                <wheel_diameter>0.2</wheel_diameter>
-
-                <!-- joint limits/ overrides urdf definitions ! -->
-                <max_wheel_torque>20</max_wheel_torque>
-                <max_wheel_acceleration>1.0</max_wheel_acceleration>
-                
-                <!-- Output messages of the plugin gazebo -> ros2-->
-                <odometry_frame>odom</odometry_frame>
-                <robot_base_frame>sew_base_footprint</robot_base_frame>
-                <publish_odom>true</publish_odom>
-                <publish_odom_tf>true</publish_odom_tf>
-                <publish_wheel_tf>true</publish_wheel_tf>
-
-                <!--command topic ros2 -> gazebo-->
-                <command_topic>cmd_vel_out</command_topic>      <!--whyever this has no effect on gazebo -> remap topics in launch file-->
-
-            </plugin>    
-        </gazebo>
-
-        <!--later add ros2 control plugin : https://www.youtube.com/watch?v=4QKsDf1c4hc&list=PLunhqkrRNRhYAffV8JDiFOatQXuU-NnxT&index=12-->
+    <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+          <robot_param>robot_description</robot_param>
+          <robot_param_node>robot_state_publisher</robot_param_node>
+          <parameters>$(find sew_agv_drivers)/config/agv_controller.yaml</parameters>
+          <controller_manager_name>controller_manager</controller_manager_name>
+        </plugin>
+    </gazebo>
 
     <!--#######################################################################################################################################-->
     <!--define gazebo tags for materials, because urdf materialc can not be used in gazebo -->
@@ -69,7 +47,7 @@
             <mu1 value="0.001"/>
             <mu2 value="0.001"/>
         </gazebo>
-
+    
     <!--#######################################################################################################################################-->
     <!--include lidar sensor simulation on lidar link -->
     <!--#######################################################################################################################################-->

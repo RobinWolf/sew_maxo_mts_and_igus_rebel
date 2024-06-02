@@ -12,13 +12,12 @@
 <!--#######################################################################################################################################-->
     <!-- set ros2 parameters, which will passsed to the macros, can be defined in the launch file-->
 <!--#######################################################################################################################################-->
-   <!-- set parameters defined in diy_robotarm_macro.xacro -->
+   <!-- set parameters defined in sew_agv_macro.xacro -->
     <xacro:arg name="tf_prefix" default=""/>
 
     <!-- ros2_control related parameters -->
     <xacro:arg name="robot_ip" default="NaN" />
-    <xacro:arg name="robot_ssid" default="NaN" />
-    <xacro:arg name="generate_ros2_control_tag" default="false" />
+    <xacro:arg name="generate_ros2_control_tag" default="true" />               <!--change default value ??? seems to be not passed to here-->
 
 
     <!-- simulation related parameters -->
@@ -37,7 +36,6 @@
         tf_prefix="$(arg tf_prefix)"
         use_fake_hardware="$(arg use_fake_hardware)"
         robot_ip="$(arg robot_ip)"
-        robot_ssid="$(arg robot_ssid)"
         generate_ros2_control_tag="$(arg generate_ros2_control_tag)"
         standalone_gazebo="$(arg standalone_gazebo)"
         ros2_control_with_gazebo="$(arg ros2_control_with_gazebo)"
