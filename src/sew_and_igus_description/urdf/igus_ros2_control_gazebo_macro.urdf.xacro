@@ -7,7 +7,7 @@
     <!--set up the ros2 control plugin for the igus rebel 6 DoF arm -->
     <!--#######################################################################################################################################-->
     <gazebo>
-        <plugin filename="libgazebo_ros2_control.so" name="igus/gazebo_ros2_control">
+        <plugin filename="libgazebo_ros2_control.so" name="igus_gazebo_ros2_control">
           <robot_param>robot_description</robot_param>
           <robot_param_node>robot_state_publisher</robot_param_node>
           <parameters>$(find sew_and_igus_moveit_config)/config/ros2_controllers_simulation.yaml</parameters>
