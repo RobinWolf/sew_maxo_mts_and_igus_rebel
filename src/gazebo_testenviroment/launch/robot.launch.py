@@ -24,22 +24,22 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "standalone_gazebo",
-            default_value='true',
+            default_value='false',
             description="add the robot description to gazebo with a simpler approach, using a diff_drive and lidar plugin",
         )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
             "generate_ros2_control_tag",
-            default_value='false',
-            description="TODO",
+            default_value='true',
+            description="launch the drivers that connect to the real hardware via IP",
         )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
             "ros2_control_with_gazebo",
-            default_value='false',
-            description="TODO",
+            default_value='true',
+            description="add the robot description to gazebo ros2 control for the diff_drive (recommendet to use instead of standalone_gazebo)",
         )
     )
     declared_arguments.append(
