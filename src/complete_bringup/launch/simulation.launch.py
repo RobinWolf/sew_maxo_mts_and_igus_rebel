@@ -124,7 +124,6 @@ def generate_launch_description():
     world = LaunchConfiguration('world')        
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
-    standalone_gazebo = LaunchConfiguration("standalone_gazebo")
     generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag') 
     ros2_control_with_gazebo = LaunchConfiguration("ros2_control_with_gazebo")
     robot_ip = LaunchConfiguration('robot_ip') 
