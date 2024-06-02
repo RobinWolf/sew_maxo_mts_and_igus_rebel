@@ -14,6 +14,7 @@
         <link name="$(arg prefix)link_6"/>
         <link name="$(arg prefix)link_7"/>
         <link name="$(arg prefix)link_8"/>
+        <link name="$(arg prefix)tool0"/>
         <joint name="$(arg prefix)joint1"/>
         <joint name="$(arg prefix)joint2"/>
         <joint name="$(arg prefix)joint3"/>
@@ -21,7 +22,7 @@
         <joint name="$(arg prefix)joint5"/>
         <joint name="$(arg prefix)joint6"/>
         <joint name="$(arg prefix)joint7"/>
-        <chain base_link="$(arg prefix)base_link" tip_link="$(arg prefix)link_8"/>
+        <chain base_link="$(arg prefix)base_link" tip_link="$(arg prefix)tool0"/>
     </group>
 
     <group_state name="zero" group="rebel_6dof">
