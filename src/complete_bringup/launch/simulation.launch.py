@@ -33,7 +33,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "ros2_control_with_gazebo",
             default_value='true',
-            description="add the robot description to gazebo ros2 control for the diff_drive, no gazebo internal plugin!",
+            description="add the robot description to gazebo ros2 control for the diff_drive (recommendet to use instead of standalone_gazebo)",
         )
     )
     declared_arguments.append(
@@ -113,7 +113,7 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "launch_rviz",
+            "launch_complete_rviz",
             default_value='true',
             description="set to true if one rviz gui for all (moveit and navigation) should be launched by default",
         )
@@ -131,7 +131,7 @@ def generate_launch_description():
     enable_joystick = LaunchConfiguration('enable_joystick') 
     prefix = LaunchConfiguration('prefix') 
     hardware_protocol = LaunchConfiguration('hardware_protocol') 
-    launch_rviz = LaunchConfiguration('launch_rviz')
+    launch_complete_rviz = LaunchConfiguration('launch_complete_rviz')
     launch_seperate_rviz = LaunchConfiguration('launch_seperate_rviz') 
     launch_mapping = LaunchConfiguration('launch_mapping')
     launch_navigation = LaunchConfiguration('launch_navigation')
@@ -139,17 +139,18 @@ def generate_launch_description():
 
 
 
-    #lauch gazebo if launch argument is set to true (without ros2 control)
+    #lauch gazebo without condition (simulation.launch!)
     load_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [PathJoinSubstitution([FindPackageShare(sim_package), 'launch']), "/robot.launch.py"]),
-            condition=IfCondition(standalone_gazebo),
             launch_arguments={
                 "tf_prefix": tf_prefix,
+                "prefix": prefix,
                 "world": world,
                 "standalone_gazebo": standalone_gazebo,
-                'prefix': prefix,
-                'hardware_protocol': hardware_protocol,
+                "generate_ros2_control_tag": generate_ros2_control_tag,
+                "ros2_control_with_gazebo": ros2_control_with_gazebo,
+                'launch_rviz':'false',
             }.items(),
     )
 
@@ -166,7 +167,7 @@ def generate_launch_description():
     )
 
     #launch real drivers if launch argument is set to true
-    load_real_drivers = IncludeLaunchDescription(
+    load_sew_drivers = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [PathJoinSubstitution([FindPackageShare(driver_package), 'launch']), "/driver.launch.py"]),
             condition=IfCondition(generate_ros2_control_tag),
@@ -179,9 +180,9 @@ def generate_launch_description():
             }.items(),
     )
 
-    delay_load_real_drivers = TimerAction(
+    delay_load_sew_drivers = TimerAction(
         period=10.0,  # Delay period in seconds
-        actions=[load_real_drivers]
+        actions=[load_sew_drivers]
     )
 
     #launch igus driver with gazebo ros2 control hardware interface and moveit if launch argument is set to true
@@ -210,7 +211,7 @@ def generate_launch_description():
             }.items(),
     )
     delay_load_navigation = TimerAction(
-        period=17.0,  # Delay period in seconds
+        period=20.0,  # Delay period in seconds
         actions=[load_navigation]
     )
 
@@ -225,7 +226,7 @@ def generate_launch_description():
             }.items(),
     )
     delay_load_mapping = TimerAction(
-        period=17.0,
+        period=20.0,
         actions=[load_mapping]
     )
 
@@ -238,10 +239,10 @@ def generate_launch_description():
         name="rviz2",
         output="log",
         arguments=["-d", rviz_config_file],
-        condition=IfCondition(launch_rviz)
+        condition=IfCondition(launch_complete_rviz)
     )
     delay_rviz_node= TimerAction(
-        period=20.0,
+        period=25.0,
         actions=[rviz_node]
     )
 
@@ -251,7 +252,7 @@ def generate_launch_description():
     nodes_to_start = [
         load_gazebo,
         load_joystick,
-        delay_load_real_drivers,
+        delay_load_sew_drivers,
         delay_load_igus,
         delay_load_mapping,
         delay_load_navigation,
