@@ -12,6 +12,7 @@ def generate_launch_description():
     igus_moveit_package = "sew_and_igus_moveit_config"
     navigation_package = "sew_agv_navigation"
     bringup_package = "complete_bringup"
+    driver_package = "sew_agv_drivers"
 
     declared_arguments = []
     declared_arguments.append(
@@ -24,8 +25,29 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "standalone_gazebo",
-            default_value='true',
+            default_value='false',
             description="add the robot description to gazebo with a simpler approach, using a diff_drive and lidar plugin",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "ros2_control_with_gazebo",
+            default_value='true',
+            description="add the robot description to gazebo ros2 control for the diff_drive, no gazebo internal plugin!",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "generate_ros2_control_tag",
+            default_value='true',
+            description="launch the drivers that connect to the real hardware via IP",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_ip",
+            default_value='TODO',
+            description="the IP the real robot can be pinged",
         )
     )
     declared_arguments.append(
@@ -102,6 +124,10 @@ def generate_launch_description():
     world = LaunchConfiguration('world')        
     tf_prefix = LaunchConfiguration("tf_prefix")
     standalone_gazebo = LaunchConfiguration("standalone_gazebo")
+    standalone_gazebo = LaunchConfiguration("standalone_gazebo")
+    generate_ros2_control_tag = LaunchConfiguration('generate_ros2_control_tag') 
+    ros2_control_with_gazebo = LaunchConfiguration("ros2_control_with_gazebo")
+    robot_ip = LaunchConfiguration('robot_ip') 
     use_sim_time = LaunchConfiguration('use_sim_time')   
     enable_joystick = LaunchConfiguration('enable_joystick') 
     prefix = LaunchConfiguration('prefix') 
@@ -135,7 +161,28 @@ def generate_launch_description():
             condition=IfCondition(enable_joystick),
             launch_arguments={
                 "use_sim_time": use_sim_time,
+                "standalone_gazebo": standalone_gazebo,
+                "generate_ros2_control_tag": generate_ros2_control_tag,
             }.items(),
+    )
+
+    #launch real drivers if launch argument is set to true
+    load_real_drivers = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [PathJoinSubstitution([FindPackageShare(driver_package), 'launch']), "/driver.launch.py"]),
+            condition=IfCondition(generate_ros2_control_tag),
+            launch_arguments={
+                "tf_prefix": tf_prefix,
+                "robot_ip": robot_ip,
+                "generate_ros2_control_tag": generate_ros2_control_tag,
+                "ros2_control_with_gazebo": ros2_control_with_gazebo,
+                "use_sim_time": use_sim_time,
+            }.items(),
+    )
+
+    delay_load_real_drivers = TimerAction(
+        period=10.0,  # Delay period in seconds
+        actions=[load_real_drivers]
     )
 
     #launch igus driver with gazebo ros2 control hardware interface and moveit if launch argument is set to true
@@ -192,7 +239,7 @@ def generate_launch_description():
         name="rviz2",
         output="log",
         arguments=["-d", rviz_config_file],
-        #condition=IfCondition(launch_rviz)
+        condition=IfCondition(launch_rviz)
     )
     delay_rviz_node= TimerAction(
         period=20.0,
@@ -205,6 +252,7 @@ def generate_launch_description():
     nodes_to_start = [
         load_gazebo,
         load_joystick,
+        delay_load_real_drivers,
         delay_load_igus,
         delay_load_mapping,
         delay_load_navigation,

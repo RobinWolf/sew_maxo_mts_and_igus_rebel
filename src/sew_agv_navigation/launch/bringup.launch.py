@@ -104,6 +104,8 @@ def generate_launch_description():
             condition=IfCondition(enable_joystick),
             launch_arguments={
                 "use_sim_time": use_sim_time,
+                "standalone_gazebo": standalone_gazebo,
+                "generate_ros2_control_tag": generate_ros2_control_tag,
             }.items(),
     )
   
