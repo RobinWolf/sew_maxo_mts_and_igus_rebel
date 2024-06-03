@@ -7,6 +7,9 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 using std::placeholders::_4;
 
+// Links for moveit sourcecode
+// MovgGroup interface: https://github.com/moveit/moveit2/blob/main/moveit_ros/planning_interface/move_group_interface/src/move_group_interface.cpp
+// PlanningScene interface: https://github.com/moveit/moveit2/blob/main/moveit_ros/planning_interface/planning_scene_interface/src/planning_scene_interface.cpp
 
 
 namespace moveit_wrapper
@@ -43,6 +46,7 @@ namespace moveit_wrapper
 
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "Initialized.");
     }
+
 
     //set up private functions which are binded to the service callback functions
     void MoveitWrapper::init_move_group()
