@@ -1,28 +1,103 @@
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-#moveit stuff
+import time
+from typing import List
+
+# service and action interfaces/ types
+from moveit_wrapper.srv import MoveToPose, MoveToJointPosition, SetVelocity, String  #import the custom service interfaces from the wrapper package
+
+
+# Affine py dependencies
+from manipulation_tasks.transform import Affine
+from manipulation_tasks.util import affine_to_pose
 
 
 class ARMClient(Node):
-
+     
     def __init__(self):
         super().__init__('arm_client_node')
 
-    def move_to_pose_lin():
-        return
+        # init all needed clients (connect to the servers from moveit_wrapper package --> Wrap MoveIt C++ Interface to Python, because MoveIt Python API has only core capabilities)
+        self.move_lin_cli = self.node.create_client(MoveToPose, "/move_to_pose_lin")    #connects to the services defined in the moveit_wrapper srvs
+        while not self.move_lin_cli.wait_for_service(timeout_sec=1.0):
+            self.node.get_logger().info("move_to_pose_lin service not available, waiting some more ...")
+        self.node.get_logger().info("move_to_pose_lin service available")
 
-    def move_to_pose_ptp():
-        return
+        self.move_ptp_cli = self.node.create_client(MoveToPose, "/move_to_pose_ptp")
+        while not self.move_ptp_cli.wait_for_service(timeout_sec=1.0):
+            self.node.get_logger().info("move_to_pose_ptp service not available, waiting some more ...")
+        self.node.get_logger().info("move_to_pose_ptp service available")
+
+        self.move_joint_cli = self.node.create_client(MoveToJointPosition, "/move_to_joint_position")
+        while not self.move_joint_cli.wait_for_service(timeout_sec=1.0):
+            self.node.get_logger().info("move_to_joint_position service not available, waiting some more ...")
+        self.node.get_logger().info("move_to_joint_position service available")
+
+        self.reset_planning_group_cli = self.node.create_client(String, "/reset_planning_group")
+        while not self.reset_planning_group_cli.wait_for_service(timeout_sec=1.0):
+            self.node.get_logger().info("reset_planning_group service not available, waiting some more ...")
+        self.node.get_logger().info("reset_planning_group service available")
+
+        self.set_velocity_cli = self.node.create_client(SetVelocity, "/setVelocityScaling")
+        while not self.set_velocity_cli.wait_for_service(timeout_sec=1.0):
+            self.node.get_logger().info("setVelocityScaling service not available, waiting some more ...")
+        self.node.get_logger().info("setVelocityScaling service available")
+
+        self.home_position = [0.0,0.0,0.0,0.0,0.0,0.0]
+
+    ##############################################################################################################################
+    ##           this are the methods which can be called in your application which are communicating to the robot              ##
+    ##############################################################################################################################
+
+    def reset_planning_group(self, planning_group) -> bool:
+        req = String.Request()
+        req.data = planning_group
+        future = ARMClient.send_request(req, self.reset_planning_group_cli)
+        response = self.wait_for_response(future)
+        return response.success
+
+    def setVelocity(self, fraction) -> bool:
+        req = SetVelocity.Request()
+        req.velocity_scaling = fraction
+        future = ARMClient.send_request(req, self.set_velocity_cli)
+        response = self.wait_for_response(future)
+        return response.success
     
-    # octomap planning scene, ...
-    
+    def home(self) -> bool:
+        return self.ptp_joint(self.home_position)
+
+    # planning in cartesian space, plans around obstacles and octomap
+    def ptp(self, pose: Affine) -> bool:
+        req = MoveToPose.Request()
+        req.pose = affine_to_pose(pose)
+        future = ARMClient.send_request(req, self.move_ptp_cli)
+        response = self.wait_for_response(future)
+        return response.success
+
+    # plan in joint_space, move to joint positions directly, but dont plan around obstacles
+    def ptp_joint(self, joint_positions: List[float]) -> bool:
+        req = MoveToJointPosition.Request()
+        req.joint_position = joint_positions
+        future = ARMClient.send_request(req, self.move_joint_cli)
+        response = self.wait_for_response(future)
+        return response.success
+
+    # plan trajectory along cartesian lin path, but dont plan around obstacles
+    def lin(self, pose: Affine) -> bool:
+        req = MoveToPose.Request()
+        req.pose = affine_to_pose(pose)
+        future = ARMClient.send_request(req, self.move_lin_cli)
+        response = self.wait_for_response(future)
+        return response.success
 
 
+
+
+    # add service calls for octomap handling and maybe planning configuration here (maybe config planners in yaml file)
 
 
     ##########################################################################################################################################################
-
     @staticmethod
     def send_service_request(request, client):
         future = client.call_async(request)
@@ -35,6 +110,7 @@ class ARMClient(Node):
 
         return future
 
+    @staticmethod
     def wait_for_service_response(self, future):
         while rclpy.ok():
             rclpy.spin_once(self)
@@ -47,7 +123,8 @@ class ARMClient(Node):
                     return None
                 else:
                     return response
-                
+
+    @staticmethod
     def wait_for_action_goal_acknowledgment(self, goal_future):
         # handle the process of sending the goal to the action server and receiving the server's acknowledgment
         # this future is completed when the action server processes the goal request
@@ -64,7 +141,8 @@ class ARMClient(Node):
                         self.get_logger().info('Action goal rejected')
                     self.get_logger().info('Action goal accepted')
                     return goal_handle
-
+                
+    @staticmethod
     def wait_for_action_result(self, goal_handle):
         result_future = goal_handle.get_result_async()
         # used to handle the process of waiting for the action to complete and retrieving the final result
@@ -80,5 +158,6 @@ class ARMClient(Node):
                 else:
                     return result
                 
+    @staticmethod   
     def destroy_node(self) -> None:
         self.destroy_node()
