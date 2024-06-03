@@ -94,7 +94,8 @@ class ARMClient(Node):
 
 
 
-    # add service calls for octomap handling and maybe planning configuration here (maybe config planners in yaml file)
+    # add service calls for octomap handling
+    # service calls for switching planner algorithm from ompl --> needs to be finetuned ! --> maybe introduce stomp as learning algorithm
 
 
     ##########################################################################################################################################################
