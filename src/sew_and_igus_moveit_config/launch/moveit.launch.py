@@ -203,8 +203,6 @@ def generate_launch_description():
 
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml(moveit_package, "config/controllers_fixed_prefix.yaml")
-
-
     moveit_controllers = {
         "moveit_simple_controller_manager": controllers_yaml,
         "moveit_controller_manager": "moveit_simple_controller_manager/MoveItSimpleControllerManager",

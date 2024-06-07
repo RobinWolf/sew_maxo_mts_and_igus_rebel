@@ -18,3 +18,6 @@
         parameters=[octomap_params],
         output='screen'
     )
+
+https://answers.ros.org/question/389233/moveit2-add-pointcloud2-to-occupancymapmonitor/
+https://github.com/RoboticsYY/moveit_tutorials/blob/ros2/doc/perception_pipeline/launch/obstacle_avoidance_demo.launch.py
