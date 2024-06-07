@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'test = master_application.test_agv_client:main'
+            'test_agv = master_application.test_agv_client:main',
+            'test_robot = master_application.test_arm_client:main',
         ],
     },
 )
