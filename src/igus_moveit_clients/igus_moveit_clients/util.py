@@ -1,5 +1,5 @@
 from geometry_msgs.msg import Pose
-from manipulation_tasks.transform import Affine
+from igus_moveit_clients.transform import Affine
 from geometry_msgs.msg import Quaternion, Point
 
 

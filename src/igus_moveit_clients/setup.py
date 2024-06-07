@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'igus_moveit_clients'
 
@@ -10,6 +12,9 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+
+        # Include all dependencie files (same as Cmakes InstallDirectory)
+        (os.path.join('share', package_name, package_name), glob('manipulation_tasks/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

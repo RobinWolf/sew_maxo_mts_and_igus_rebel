@@ -9,8 +9,8 @@ from moveit_wrapper.srv import MoveToPose, MoveToJointPosition, SetVelocity, Str
 
 
 # Affine py dependencies
-from manipulation_tasks.transform import Affine
-from manipulation_tasks.util import affine_to_pose
+from igus_moveit_clients.transform import Affine
+from igus_moveit_clients.util import affine_to_pose
 
 
 class ARMClient(Node):
@@ -19,30 +19,30 @@ class ARMClient(Node):
         super().__init__('arm_client_node')
 
         # init all needed clients (connect to the servers from moveit_wrapper package --> Wrap MoveIt C++ Interface to Python, because MoveIt Python API has only core capabilities)
-        self.move_lin_cli = self.node.create_client(MoveToPose, "/move_to_pose_lin")    #connects to the services defined in the moveit_wrapper srvs
+        self.move_lin_cli = self.create_client(MoveToPose, "/move_to_pose_lin")    #connects to the services defined in the moveit_wrapper srvs
         while not self.move_lin_cli.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().info("move_to_pose_lin service not available, waiting some more ...")
-        self.node.get_logger().info("move_to_pose_lin service available")
+            self.get_logger().info("move_to_pose_lin service not available, waiting some more ...")
+        self.get_logger().info("move_to_pose_lin service available")
 
-        self.move_ptp_cli = self.node.create_client(MoveToPose, "/move_to_pose_ptp")
+        self.move_ptp_cli = self.create_client(MoveToPose, "/move_to_pose_ptp")
         while not self.move_ptp_cli.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().info("move_to_pose_ptp service not available, waiting some more ...")
-        self.node.get_logger().info("move_to_pose_ptp service available")
+            self.get_logger().info("move_to_pose_ptp service not available, waiting some more ...")
+        self.get_logger().info("move_to_pose_ptp service available")
 
-        self.move_joint_cli = self.node.create_client(MoveToJointPosition, "/move_to_joint_position")
+        self.move_joint_cli = self.create_client(MoveToJointPosition, "/move_to_joint_position")
         while not self.move_joint_cli.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().info("move_to_joint_position service not available, waiting some more ...")
-        self.node.get_logger().info("move_to_joint_position service available")
+            self.get_logger().info("move_to_joint_position service not available, waiting some more ...")
+        self.get_logger().info("move_to_joint_position service available")
 
-        self.reset_planning_group_cli = self.node.create_client(String, "/reset_planning_group")
+        self.reset_planning_group_cli = self.create_client(String, "/reset_planning_group")
         while not self.reset_planning_group_cli.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().info("reset_planning_group service not available, waiting some more ...")
-        self.node.get_logger().info("reset_planning_group service available")
+            self.get_logger().info("reset_planning_group service not available, waiting some more ...")
+        self.get_logger().info("reset_planning_group service available")
 
-        self.set_velocity_cli = self.node.create_client(SetVelocity, "/setVelocityScaling")
+        self.set_velocity_cli = self.create_client(SetVelocity, "/setVelocityScaling")
         while not self.set_velocity_cli.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().info("setVelocityScaling service not available, waiting some more ...")
-        self.node.get_logger().info("setVelocityScaling service available")
+            self.get_logger().info("setVelocityScaling service not available, waiting some more ...")
+        self.get_logger().info("setVelocityScaling service available")
 
         self.home_position = [0.0,0.0,0.0,0.0,0.0,0.0]
 
