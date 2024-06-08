@@ -225,6 +225,14 @@ def opaque_test(context, *args, **kwargs):
         ],
     )
 
+    planning_group = {"planning_group": "rebel_6dof"}
+    moveit_wrapper_node = Node(
+        package="moveit_wrapper",
+        executable="moveit_wrapper_node",
+        output="screen",
+        parameters=[robot_description, robot_description_semantic, robot_description_kinematics, planning_group],
+    )
+
     # only launch with real hardware -> TODO
     # control_node = Node(
     #     package="controller_manager",
@@ -252,6 +260,7 @@ def opaque_test(context, *args, **kwargs):
         arguments=["rebel_6dof_controller", "-c", controller_manager_name],
     )
 
+
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -266,6 +275,7 @@ def opaque_test(context, *args, **kwargs):
 
     return [
         move_group_node,
+        moveit_wrapper_node,
         rebel_6dof_controller_node,
         rviz_node,
     ]
