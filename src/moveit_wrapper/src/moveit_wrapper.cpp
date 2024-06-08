@@ -108,20 +108,22 @@ namespace moveit_wrapper
                 rt.setRobotTrajectoryMsg(*_move_group->getCurrentState(), trajectory);
                 trajectory_processing::TimeOptimalTrajectoryGeneration time_parameterization;
                 // Recalculate timestamps in reference to velocityscaling factor
-                bool success = time_parameterization.computeTimeStamps(rt, _veloctiy_target);
+                bool success_timeparam = time_parameterization.computeTimeStamps(rt, _veloctiy_target);
                 RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "scale new timestamps with %f %% of -------> new trajectory",_veloctiy_target * 100.);
-                RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "Computing time stamps %s", success ? "SUCCEEDED" : "FAILED");
+                RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "Computing time stamps %s", success_timeparam ? "SUCCEEDED" : "FAILED");
                 // Store trajectory in current_plan_
                 moveit::planning_interface::MoveGroupInterface::Plan current_plan_;
                 rt.getRobotTrajectoryMsg(current_plan_.trajectory_);
                 current_plan_.planning_time_ = (rclcpp::Clock().now() - start).seconds();
 
-                if(success) {
+                if(success_timeparam) {
                      _move_group->execute(current_plan_);
+                     success = true;
                  }
+
+                response->success = success;
             }
         }
-        response->success = success;
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "move_to_pose_lin callback executed.");
     }
 
@@ -180,7 +182,7 @@ namespace moveit_wrapper
         return success;
     }
 
-    bool MoveitWrapper::setVelocityScaling(const std::shared_ptr<moveit_wrapper::srv::SetVelocity::Request> request,
+    void MoveitWrapper::setVelocityScaling(const std::shared_ptr<moveit_wrapper::srv::SetVelocity::Request> request,
                 std::shared_ptr<moveit_wrapper::srv::SetVelocity::Response> response)
     {
         bool success = false;
