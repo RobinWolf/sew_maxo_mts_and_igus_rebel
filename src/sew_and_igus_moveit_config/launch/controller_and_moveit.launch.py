@@ -189,6 +189,20 @@ def opaque_test(context, *args, **kwargs):
         "publish_transforms_updates": True,
     }
 
+    # Octomap/ Moveit Perception setup
+    octomap_config = {'octomap_frame': 'igus_camera_link_optical', 
+                      'octomap_resolution': 0.05,
+                      'max_range': 3.0}
+
+    octomap_updater_file = PathJoinSubstitution(
+        [
+            FindPackageShare(moveit_package),
+            "config",
+            "sensor_pointcloud.yaml",
+        ]
+    )
+    octomap_updater_config = load_yaml(Path(octomap_updater_file.perform(context)))
+
     moveit_args_not_concatenated = [
         {"robot_description": robot_description.perform(context)},
         {"robot_description_semantic": robot_description_semantic.perform(context)},
@@ -205,6 +219,8 @@ def opaque_test(context, *args, **kwargs):
             "publish_transforms_updates": True,
         },
         ompl,
+        octomap_config,
+        octomap_updater_config
     ]
 
     # Concatenate all dictionaries together, else moveitpy won't read all parameters
