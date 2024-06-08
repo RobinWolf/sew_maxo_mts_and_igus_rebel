@@ -91,6 +91,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     ros-${ROS_DISTRO}-moveit  \
     ros-${ROS_DISTRO}-moveit-common  \
     ros-${ROS_DISTRO}-moveit-servo  \
+    ros-${ROS_DISTRO}-moveit-ros-perception  \
     ros-${ROS_DISTRO}-joint-trajectory-controller  \
     ros-${ROS_DISTRO}-joint-state-broadcaster  \
     ros-${ROS_DISTRO}-controller-manager \
