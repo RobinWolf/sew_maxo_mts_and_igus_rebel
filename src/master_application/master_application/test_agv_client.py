@@ -20,7 +20,11 @@ def main():
     error_code = agv.move_to_nav_goal('map',[1.0,0.0,0.0])
     print('Navigation Return Error Code:', error_code)
 
+    # destroy the agv node, stop execution
+    agv.destroy_node()
 
+    # shutdown previously initialized context
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

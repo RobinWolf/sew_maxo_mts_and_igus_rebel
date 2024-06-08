@@ -53,15 +53,15 @@ class ARMClient(Node):
     def reset_planning_group(self, planning_group) -> bool:
         req = String.Request()
         req.data = planning_group
-        future = ARMClient.send_request(req, self.reset_planning_group_cli)
-        response = self.wait_for_response(future)
+        future = ARMClient.send_service_request(req, self.reset_planning_group_cli)
+        response = self.wait_for_service_response(future)
         return response.success
 
     def setVelocity(self, fraction) -> bool:
         req = SetVelocity.Request()
         req.velocity_scaling = fraction
-        future = ARMClient.send_request(req, self.set_velocity_cli)
-        response = self.wait_for_response(future)
+        future = ARMClient.send_service_request(req, self.set_velocity_cli)
+        response = self.wait_for_service_response(future)
         return response.success
     
     def home(self) -> bool:
@@ -71,24 +71,24 @@ class ARMClient(Node):
     def ptp(self, pose: Affine) -> bool:
         req = MoveToPose.Request()
         req.pose = affine_to_pose(pose)
-        future = ARMClient.send_request(req, self.move_ptp_cli)
-        response = self.wait_for_response(future)
+        future = ARMClient.send_service_request(req, self.move_ptp_cli)
+        response = self.wait_for_service_response(future)
         return response.success
 
     # plan in joint_space, move to joint positions directly, but dont plan around obstacles
     def ptp_joint(self, joint_positions: List[float]) -> bool:
         req = MoveToJointPosition.Request()
         req.joint_position = joint_positions
-        future = ARMClient.send_request(req, self.move_joint_cli)
-        response = self.wait_for_response(future)
+        future = ARMClient.send_service_request(req, self.move_joint_cli)
+        response = self.wait_for_service_response(future)
         return response.success
 
     # plan trajectory along cartesian lin path, but dont plan around obstacles
     def lin(self, pose: Affine) -> bool:
         req = MoveToPose.Request()
         req.pose = affine_to_pose(pose)
-        future = ARMClient.send_request(req, self.move_lin_cli)
-        response = self.wait_for_response(future)
+        future = ARMClient.send_service_request(req, self.move_lin_cli)
+        response = self.wait_for_service_response(future)
         return response.success
 
 
@@ -111,7 +111,6 @@ class ARMClient(Node):
 
         return future
 
-    @staticmethod
     def wait_for_service_response(self, future):
         while rclpy.ok():
             rclpy.spin_once(self)
@@ -124,8 +123,8 @@ class ARMClient(Node):
                     return None
                 else:
                     return response
+                
 
-    @staticmethod
     def wait_for_action_goal_acknowledgment(self, goal_future):
         # handle the process of sending the goal to the action server and receiving the server's acknowledgment
         # this future is completed when the action server processes the goal request
@@ -143,7 +142,7 @@ class ARMClient(Node):
                     self.get_logger().info('Action goal accepted')
                     return goal_handle
                 
-    @staticmethod
+    
     def wait_for_action_result(self, goal_handle):
         result_future = goal_handle.get_result_async()
         # used to handle the process of waiting for the action to complete and retrieving the final result
@@ -159,6 +158,5 @@ class ARMClient(Node):
                 else:
                     return result
                 
-    @staticmethod   
     def destroy_node(self) -> None:
         self.destroy_node()
