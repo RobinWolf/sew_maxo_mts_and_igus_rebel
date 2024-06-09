@@ -6,7 +6,7 @@ from typing import List
 
 # service and action interfaces/ types
 from moveit_wrapper.srv import MoveToPose, MoveToJointPosition, SetVelocity, String  #import the custom service interfaces from the wrapper package
-
+from std_srvs.srv import Empty
 
 # Affine py dependencies
 from igus_moveit_clients.transform import Affine
@@ -43,6 +43,11 @@ class ARMClient(Node):
         while not self.set_velocity_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("setVelocityScaling service not available, waiting some more ...")
         self.get_logger().info("setVelocityScaling service available")
+
+        self.clear_octomap_cli = self.create_client(Empty, "/clear_octomap")
+        while not self.clear_octomap_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("clear_octomap service not available, waiting some more ...")
+        self.get_logger().info("clear_octomap service available")
 
         self.home_position = [0.0,0.0,0.0,0.0,0.0,0.0]
 
@@ -92,10 +97,18 @@ class ARMClient(Node):
         return response.success
 
 
+    # clear octomap in planning scene, only use current pointcloud for detecting collision geometry in the planning scene
+    def clear_octomap(self) -> None:
+        req = Empty.Request()
+        future = ARMClient.send_service_request(req, self.clear_octomap_cli)
+        self.wait_for_service_response(future)
+        return
 
 
-    # add service calls for octomap handling
-    # service calls for switching planner algorithm from ompl --> needs to be finetuned ! --> maybe introduce stomp as learning algorithm
+
+
+
+    # service calls for switching planner algorithm from ompl --> needs to be finetuned ! --> maybe introduce stomp as learning algorithm ???
 
 
     ##########################################################################################################################################################

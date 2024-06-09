@@ -18,12 +18,13 @@ def main():
     robot.home_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     # move robot to home position
-    print("move robot to home position")
-    robot.home()
+    # print("move robot to home position")
+    # robot.home()
 
-    time.sleep(5)
+    # time.sleep(5)
 
-    robot.home()
+    # robot.home()
+    robot.clear_octomap()
 
     # destroy the robot node, stop execution
     robot.destroy_node()
