@@ -50,20 +50,21 @@ def opaque_test(context, *args, **kwargs):
         [FindPackageShare(moveit_package), "rviz", "moveit_rviz.rviz"]
     )
 
-    ros2_controllers_file = PathJoinSubstitution(
-        [
-            FindPackageShare(moveit_package),
-            "config",
-            "ros2_controllers_simulation.yaml",
-        ]
-    )
-    ros2_controllers = ReplaceString(
-        source_file=ros2_controllers_file,
-        replacements={
-            "<namespace>": namespace,
-            "<prefix>": prefix,
-        },
-    )
+    # only needed for real hardware --> currently the ros2 control related things are launched in the complete_bringup/simulation.launch.py
+    # ros2_controllers_file = PathJoinSubstitution(
+    #     [
+    #         FindPackageShare(moveit_package),
+    #         "config",
+    #         "ros2_controllers_simulation.yaml",
+    #     ]
+    # )
+    # ros2_controllers = ReplaceString(
+    #     source_file=ros2_controllers_file,
+    #     replacements={
+    #         "<namespace>": namespace,
+    #         "<prefix>": prefix,
+    #     },
+    # )
 
     joint_limits_file = PathJoinSubstitution(
         [
@@ -269,6 +270,7 @@ def opaque_test(context, *args, **kwargs):
     #     arguments=["joint_state_broadcaster", "-c", controller_manager_name],
     # )
 
+    # controller for moveit, the controller manager is already up and running when you launch this file from the simulation.launch.py because its launched in the sew_agv_drivers/driver.launch.py
     rebel_6dof_controller_node = Node(
         package="controller_manager",
         executable="spawner",
