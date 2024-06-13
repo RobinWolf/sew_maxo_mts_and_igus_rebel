@@ -287,6 +287,7 @@ def opaque_test(context, *args, **kwargs):
         parameters=[
             {"robot_description": robot_description},
             {'use_sim_time': use_sim_time},
+            moveit_args,
         ],
         condition=IfCondition(launch_rviz),
     )
