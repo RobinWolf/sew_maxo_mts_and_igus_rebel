@@ -167,7 +167,7 @@ def generate_launch_description():
             }.items(),
     )
 
-    #launch real drivers if launch argument is set to true
+    #launch sew drivers if launch argument is set to true
     load_sew_drivers = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [PathJoinSubstitution([FindPackageShare(driver_package), 'launch']), "/driver.launch.py"]),

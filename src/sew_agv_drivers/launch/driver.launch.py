@@ -101,7 +101,8 @@ def generate_launch_description():
 
 
     #define the nodes to launch 
-    control_node = Node(
+    control_node = Node(    #the controller manager is only needed with real hardware, gazebo simulation has its own controller manager !
+        condition = IfCondition(use_sim_time),
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[agv_description, agv_controllers, {'use_sim_time': use_sim_time}],
