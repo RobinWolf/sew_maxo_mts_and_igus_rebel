@@ -6,7 +6,7 @@ from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 
 
 def generate_launch_description():
@@ -102,7 +102,7 @@ def generate_launch_description():
 
     #define the nodes to launch 
     control_node = Node(    #the controller manager is only needed with real hardware, gazebo simulation has its own controller manager !
-        condition = IfCondition(not use_sim_time),
+        condition = UnlessCondition(use_sim_time),
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[agv_description, agv_controllers, {'use_sim_time': use_sim_time}],
