@@ -58,7 +58,7 @@ Users can use the complete software architecture by these two packages. Its not 
 The following graphics should provide a brief overview about the ROS2 ecosyetem inside this repo and how the described packages interact with each other.  
 Note: this is an breakdown to a absolute minimum of information ecspecially to pick up readers who are not that familiar with ROS2. For experienced readers the usage of rqt-GUI and terminal commands to get deeper insights in node communication over topics and services/ actions is recommendet.
 
-TODO Grapthcs with DrawIO
+<img src="img/architecture.png" alt="drawing" width="800"/>
 
 ## How to use the Simulation
 In this section we want to guide a new, unexperiences user to use our repo and develop own supervised control logics with python.
