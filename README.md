@@ -5,10 +5,7 @@ This is a core breakdown of the official documentation to the FE-Project of Hann
 
 ### Usage of containerized enviroments with Docker:
 The usage of Docker is a common Praxis when working with ROS2. The biggest advantage of devbeloping a ROS ecosystem inside a containerized enviroment is  that it can be used independent of the host hardware.  
-Everyone who wants to use this repo has just to clone the repo from GitHub to the local disk and run the Dockerfile with executing the bash script with:  
-``` 
-./run_dev.sh
-```
+Everyone who wants to use this repo has just to clone the repo from GitHub to the local disk and run the Dockerfile.
 No ROS2 installation on the host machine  necessary !  
 All needed ROS2-Packages are installed and set up by default when running the Dockerfile. Moreover the network setup for the ROS2 Node communication over topics with fast-RTPS defined in the dds_profile.xml is done automatically.
 
