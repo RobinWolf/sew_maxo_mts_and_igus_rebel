@@ -75,15 +75,14 @@ In this section we want to guide a new, unexperiences user to use our repo and d
 1) launch required nodes by calling the launch file from the complete_bringup package ```ros2 launch complete_bringup simulation.launch.py``` or ```ros2 launch complete_bringup real.launch.py``` for real hardware (currently not supported 06/2024) - optional: set provided launch arguments if not to use the defaults
 Hint: Gazebo may output a "not responding" error at the first launch. Thats common, please wait until gazebo is launched, kill the running terminal with ctrl+C and redo step 6. Now gazebo should load faster from cache.
 2) optional: connect the xBox One controller to your host PC via USB
-   ![gazebo world](.img/gazebo_enviroment.png)
-   ![initial pose not set](.img/rviz_before_initial_pos.png)
-3) set the initial pose of he AGV in the world by clicking the "set initial pose" button in the top task-bar in RVIZ first and click to the current AGV pose (direction can be set with sliding while clicking). A green arrow should appear.
-   ![set initial pose](.img/rviz_set_initial_pos.png)
+   <img src="img/gazebo_enviroment.png" alt="drawing" width="300"/>
+   <img src="img/rviz_before_initial_pos.png" alt="drawing" width="300"/>
+3) set the initial pose of he AGV in the world by clicking the "set initial pose" button in the top task-bar in RVIZ first and click to the current AGV pose (direction can be set with sliding while clicking). A green arrow should appear.  
+   <img src="img/rviz_set_initial_pos.png" alt="drawing" width="300"/>
 4) now you shuld be able to navigate the AGV in RVIZ by publishing a new goal pose by first clicking the corresponding button in the top task bar and second the desired goal on the map.
-   ![navigation ongoing](.img/rviz_navigation_ongoing.png)
+   <img src="img/rviz_navigation_ongoing.png" alt="drawing" width="300"/>
 5) Motion Planning with the arm sohuld be possible too. Just modify the joint states in the bottom left window and click the "plan and execute" button.
 
-TODO -------> RVIZ and Gazebo Screenshot
 
 #### Run a supervised Control Script
 1)  connect a new, second terminal to the running container with: ```docker exec -it sew_mobile_manipulator bash``` and source insite the new terminal (like step 5)
