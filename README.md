@@ -116,11 +116,11 @@ def move_to_nav_goal(self, frameID, pose):
 
     """
 
-def collision_checker()--> TODO!!!
+def collision_checker():--> TODO!!!
 ```
 ***Robot-Arm-Control:***
 ```python
-def reset_planning_group(self, planning_group)
+def reset_planning_group(self, planning_group):
     """
     string planning_group: name of the planning group of the arm (default: igus_6dof)
 
@@ -129,7 +129,7 @@ def reset_planning_group(self, planning_group)
     bool success
 
     """
-def setVelocity(self, fraction)
+def setVelocity(self, fraction):
     """
     float: velocity caling coeffinet relative to joint speed limits (0.01 ... 0.5 recommendet)
 
@@ -138,7 +138,7 @@ def setVelocity(self, fraction)
     bool success
 
     """
-def home(self)
+def home(self):
     """
 
     Returns
@@ -146,7 +146,7 @@ def home(self)
     bool success
 
     """
-def ptp(self, pose: Affine)
+def ptp(self, pose: Affine):
     """
     cartesian goal pose: affine transformation martix format (can be converted from x,y,z, r,p,y od x,y,z and quaternion)
 
@@ -155,7 +155,7 @@ def ptp(self, pose: Affine)
     bool success
 
     """
-def ptp_joint(self, joint_positions: List[float])
+def ptp_joint(self, joint_positions: List[float]):
     """
     joint space goal pose: list of goal joint states (rad)
 
@@ -164,7 +164,7 @@ def ptp_joint(self, joint_positions: List[float])
     bool success
 
     """
-def lin(self, pose: Affine)
+def lin(self, pose: Affine):
     """
     cartesian goal pose: affine transformation matrix format (can be converted from x,y,z, r,p,y od x,y,z and quaternion)
 
@@ -173,7 +173,7 @@ def lin(self, pose: Affine)
     bool success
 
     """
-def clear_octomap(self)
+def clear_octomap(self):
     """
     Returns
     -------
