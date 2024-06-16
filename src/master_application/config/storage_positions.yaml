@@ -1,0 +1,25 @@
+# this yaml file holds the configuration of the storage positions (boxes of shelf positions)
+# these are defined relative to the map frame, and are used to navigate the robot to the desired position
+# the positions have to be set up after our convention (x to the corridor, y to the shelf, z to the height, only z rotation)
+
+pos1:
+  position:
+    x: 2.0
+    y: 0.0
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 1.0
+    w: 1.0
+    
+pos2:
+  position:
+    x: 1.0
+    y: 2.0
+    z: 3.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 1.0
+    w: 1.0

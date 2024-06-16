@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+import glob
 
 package_name = 'master_application'
 
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/config', glob.glob('config/*')),  # Install configs
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -22,6 +25,7 @@ setup(
         'console_scripts': [
             'test_agv = master_application.test_agv_client:main',
             'test_robot = master_application.test_arm_client:main',
+            'storage_position_handling = master_application.test_storage_position_handling:main',  
         ],
     },
 )

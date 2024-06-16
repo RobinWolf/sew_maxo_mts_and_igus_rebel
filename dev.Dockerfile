@@ -100,11 +100,19 @@ RUN DEBIAN_FRONTEND=noninteractive \
 USER $USER
 
 
-#install dependencies for python interface/ py_dependencies to calculate with affine transformations
-# USER root
-# RUN apt-get update && apt-get install -y pip
-# USER $USER
-# RUN pip install scipy
+#install dependencies to calculate with affine transformations
+USER root
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt update && apt install -y  \
+    ros-${ROS_DISTRO}-tf-transformations
+
+RUN apt-get update && apt-get install -y pip
+
+RUN pip install transforms3d
+RUN pip install scipy
+
+USER $USER
+
 
 
 # Build the workspace 
