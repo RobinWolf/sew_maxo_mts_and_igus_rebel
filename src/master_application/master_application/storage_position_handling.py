@@ -6,6 +6,7 @@ import tf_transformations as tft
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 from geometry_msgs.msg import TransformStamped
+from rclpy.time import Time, Duration
 from tf2_ros import TransformException, ConnectivityException, LookupException, ExtrapolationException
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from igus_moveit_clients.transform import Affine
@@ -14,7 +15,7 @@ from igus_moveit_clients.transform import Affine
 class StorageClient(Node):
     def __init__(self):
         super().__init__('storage_position_handling_client_node')
-        self.set_parameters([rclpy.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
+        self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)   # broadcaster to publish by transforms relative to the map frame in tf tree (/tf_static)
         self.positions_config_path = None # default: '/home/ros2_ws/src/master_application/config/positions.yaml'
         self.robot_base_name = None # default: 'igus_base_link'
@@ -102,19 +103,19 @@ class StorageClient(Node):
         while (not has_transform) and counter < 10:
             rclpy.spin_once(self)
             counter += 1
+            has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=1.0))
+            print("has_transform: ", has_transform)
+
             try:
-                now = rclpy.time.Time()
-                trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, now)
+                trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=1.0))   # takes latest available tf in buffer
                 trans = trans.transform
                 transform = Affine(
                     [trans.translation.x, trans.translation.y, trans.translation.z],
                     [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
-                has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, now)
-                print("Has transform: ", has_transform, counter)
+                
             except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
-                self.get_logger().info(
-                    f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
-            return None
+                #self.get_logger().info(f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
+                pass
         return transform
 
 
