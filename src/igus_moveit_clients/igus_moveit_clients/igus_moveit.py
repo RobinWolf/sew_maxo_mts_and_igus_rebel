@@ -3,6 +3,7 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 import time
 from typing import List
+from tf2_ros import TransformException, ConnectivityException, LookupException, ExtrapolationException
 
 # service and action interfaces/ types
 from moveit_wrapper.srv import MoveToPose, MoveToJointPosition, SetVelocity, String  #import the custom service interfaces from the wrapper package
@@ -54,6 +55,36 @@ class ARMClient(Node):
     ##############################################################################################################################
     ##           this are the methods which can be called in your application which are communicating to the robot              ##
     ##############################################################################################################################
+    def get_transform(self, from_frame_rel, to_frame_rel):
+        """
+        string to_frame_rel: name of the target frame to transform into
+        string from_frame_rel: name of the source frame frame to transform from
+
+        Returns:
+        --------
+        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+        """
+        # Calculate the transform between the robot base frame and the target frame
+        counter = 0
+        has_transform = False
+        transform = None
+        while (not has_transform) and counter < 10:
+            rclpy.spin_once(self)
+            counter += 1
+            try:
+                now = rclpy.time.Time()
+                trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, now)
+                trans = trans.transform
+                transform = Affine(
+                    [trans.translation.x, trans.translation.y, trans.translation.z],
+                    [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
+                has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, now)
+                print("Has transform: ", has_transform, counter)
+            except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
+                self.get_logger().info(
+                    f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
+        return transform
+    
 
     def reset_planning_group(self, planning_group) -> bool:
         req = String.Request()
