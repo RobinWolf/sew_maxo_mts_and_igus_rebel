@@ -49,6 +49,25 @@ class StorageClient(Node):
         self.tf_static_broadcaster.sendTransform(target_tf)
         self.get_logger().info(f'published tf for {target_name}')
         
+        
+    def clear_tf(self, tf_name):
+        """
+        string tf_name: name of the target tf to clear
+
+        Returns:
+        --------
+        None
+        """
+        # Create a TransformStamped message with an empty transform
+        empty_tf = TransformStamped()
+        empty_tf.header.frame_id = 'map'
+        empty_tf.child_frame_id = tf_name
+        empty_tf.header.stamp = self.get_clock().now().to_msg()
+        
+        # Publish the empty transform to clear the tf
+        self.tf_static_broadcaster.sendTransform(empty_tf)
+        self.get_logger().info(f'Cleared tf for {tf_name}')
+
 
 
     def get_park_positions(self, target_name):
