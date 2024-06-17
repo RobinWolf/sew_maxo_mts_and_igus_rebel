@@ -18,13 +18,12 @@ class StorageClient(Node):
         self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)   # broadcaster to publish by transforms relative to the map frame in tf tree (/tf_static)
         self.positions_config_path = None # default: '/home/ros2_ws/src/master_application/config/positions.yaml'
-        self.robot_base_name = None # default: 'igus_base_link'
         self.tf_buffer = Buffer()
         self.transform_listener = TransformListener(self.tf_buffer, self)
         self.get_logger().info('storage handling node initialized')
 
 
-    def get_target_tf(self, target_name):
+    def publish_target_tf(self, target_name):
         """
         string target_name: name of the target to publish its tf
 
@@ -100,26 +99,40 @@ class StorageClient(Node):
         counter = 0
         has_transform = False
         transform = None
-        while (not has_transform) and counter < 10:
+        while (not has_transform) and counter < 200:
             rclpy.spin_once(self)
+
             counter += 1
-            has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=1.0))
-            print("has_transform: ", has_transform)
+    
+            #if counter % 10 == 0:
+            #    self.get_logger().warn(f'Try to find transform {to_frame_rel} to {from_frame_rel} {counter} times... try again...')
 
             try:
-                trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=1.0))   # takes latest available tf in buffer
-                trans = trans.transform
-                transform = Affine(
-                    [trans.translation.x, trans.translation.y, trans.translation.z],
-                    [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
+                has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))
+                if has_transform:
+                    trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))   # takes latest available tf in buffer
+                    trans = trans.transform
+                    transform = Affine(
+                        [trans.translation.x, trans.translation.y, trans.translation.z],
+                        [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
                 
             except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
-                #self.get_logger().info(f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
-                pass
+                self.get_logger().error(f'Exception during transform {from_frame_rel} to {to_frame_rel} after {counter} tries... {ex}')                
+                transform = None
+            
+        if transform != None:    
+            self.get_logger().info(f'Found transform {from_frame_rel} to {to_frame_rel} after {counter} tries') 
+        else:
+            self.get_logger().error(f'Could not transform {from_frame_rel} to {to_frame_rel} after {counter} tries...try again and check passed frame ids...')
         return transform
 
 
-    def load_yaml(self, path):
+    
+
+
+    ##########################################################################################################################################################
+    @staticmethod
+    def load_yaml(path):
         """
         string path: path to yaml file
 
@@ -130,4 +143,5 @@ class StorageClient(Node):
         with open(path, 'r') as file:
             data = yaml.load(file, Loader=yaml.FullLoader)
         return data
-    
+
+        
