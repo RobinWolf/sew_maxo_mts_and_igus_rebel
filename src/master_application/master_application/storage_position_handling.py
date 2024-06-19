@@ -10,6 +10,8 @@ from rclpy.time import Time, Duration
 from tf2_ros import TransformException, ConnectivityException, LookupException, ExtrapolationException
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from igus_moveit_clients.transform import Affine
+import igus_moveit_clients.util as util
+from sew_agv_clients.agv import AgvClient
 
 
 class StorageClient(Node):
@@ -20,6 +22,7 @@ class StorageClient(Node):
         self.positions_config_path = None # default: '/home/ros2_ws/src/master_application/config/positions.yaml'
         self.tf_buffer = Buffer()
         self.transform_listener = TransformListener(self.tf_buffer, self)
+        self.collisionChecker = AgvClient()
         self.get_logger().info('storage handling node initialized')
 
 
@@ -70,7 +73,7 @@ class StorageClient(Node):
 
 
 
-    def get_park_positions(self, target_name):
+    def get_park_positions(self, target_name, numTestpoints, armRange, offset):
         """
         string target_name: name of the target to reach
 
@@ -79,36 +82,54 @@ class StorageClient(Node):
         bool sucess: whether a park position was found from which the robot can reach the desired target position or not
         """
         park_position_reachable = False
-        # load target data from yaml file
-        target_data = self.load_yaml(self.positions_config_path)[target_name]
 
-
-        ## TODO --> implement Hannes Algorithm to get nearest valid park position
-
+        # get affine between map and target position from (child), to (parent)
+        target_tf = self.get_transform(target_name, 'map')
         
-        # park_tf = TransformStamped()
-        # park_tf.header.frame_id = 'map'
-        # park_tf.child_frame_id = 'park_position_' + target_name
-        # park_tf.header.stamp =  self.get_clock().now().to_msg()
-        # park_tf.transform.translation.x = park_data['position'][]
-        # park_tf.transform.translation.y = park_data['position'][]
-        # park_tf.transform.translation.z = 0.0
-        # park_tf.transform.rotation.x = park_data['orientation'][]
-        # park_tf.transform.rotation.y = park_data['orientation'][]
-        # park_tf.transform.rotation.z = park_data['orientation'][]
-        # park_tf.transform.rotation.w = park_data['orientation'][]
+        # Calculate the step size for test points
+        step_size = (armRange-offset) / numTestpoints
 
-        # # publish tf for park position
-        # self.tf_static_broadcaster.sendTransform(park_tf)
-        # self.get_logger().info(f'published tf for park position of {target_name}')
+        # interpolate line from target position along local x-axis to find park position
+        for testCycle in range (numTestpoints):
+            #calculate new test point on x axis (on the ground - z = 0)
+            testPoint = Affine()
+            testPoint.rotation = np.identity(3)
+            testPoint.translation = testCycle * np.array([step_size, 0, -target_tf.translation[2]])
+
+            # publish test tf only for testing purposes
+            test_tf = TransformStamped()
+            test_tf.header.frame_id = target_name
+            test_tf.child_frame_id = 'test_position_' + testCycle + target_name
+            test_tf.transform.translation = util.affine_to_transform(testPoint).translation
+            test_tf.transform.rotation = util.affine_to_transform(testPoint).rotation
+
+            self.tf_static_broadcaster.sendTransform(test_tf)
+
+            # check if test point is in collision or not (frameID, pose)
+            reachable = self.collisionChecker.check_nav_goal()
+            if reachable:
+                park_position_reachable = True
+                break
+        
+        
+        park_tf = TransformStamped()
+        park_tf.header.frame_id = target_name
+        park_tf.child_frame_id = 'test_position_' + testCycle + target_name
+        park_tf.transform.translation = util.affine_to_transform(testPoint).translation
+        park_tf.transform.rotation = util.affine_to_transform(testPoint).rotation
+
+
+        # publish tf for park position
+        self.tf_static_broadcaster.sendTransform(park_tf)
+        self.get_logger().info(f'published tf for park position of {target_name}')
         return park_position_reachable
     
 
    
     def get_transform(self, from_frame_rel, to_frame_rel):
         """
-        string to_frame_rel: name of the target frame to transform into
-        string from_frame_rel: name of the source frame frame to transform from
+        string from_frame_rel: name of the source frame frame to transform from (child)
+        string to_frame_rel: name of the target frame to transform into (parent)
 
         Returns:
         --------
