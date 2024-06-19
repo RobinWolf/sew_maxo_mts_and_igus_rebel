@@ -20,7 +20,7 @@ def main():
     storage_client.publish_target_tf('desk_test')
 
     # get and publish tf for park position of pos_1
-    storage_client.get_park_positions('desk_test', 4, 1, 0.2)
+    storage_client.get_park_poseCmd('desk_test', 4, 1, 0.2, True)
 
     # get and publish relative tf from robot base to target (to be used for robot arm motion planning)
     #affine = storage_client.get_transform('igus_tool0', robot_base_frame)   # from (child), to (parent)

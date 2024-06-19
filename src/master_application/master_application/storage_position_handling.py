@@ -8,10 +8,11 @@ from tf2_ros.buffer import Buffer
 from geometry_msgs.msg import TransformStamped
 from rclpy.time import Time, Duration
 from tf2_ros import TransformException, ConnectivityException, LookupException, ExtrapolationException
+
+from nav2_msgs.action import NavigateToPose
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from igus_moveit_clients.transform import Affine
-import igus_moveit_clients.util as util
-from sew_agv_clients.agv import AgvClient
+from sew_agv_clients.agv import AGVClient
 
 
 class StorageClient(Node):
@@ -22,7 +23,7 @@ class StorageClient(Node):
         self.positions_config_path = None # default: '/home/ros2_ws/src/master_application/config/positions.yaml'
         self.tf_buffer = Buffer()
         self.transform_listener = TransformListener(self.tf_buffer, self)
-        self.collisionChecker = AgvClient()
+        self.collisionChecker = AGVClient()
         self.get_logger().info('storage handling node initialized')
 
 
@@ -73,56 +74,60 @@ class StorageClient(Node):
 
 
 
-    def get_park_positions(self, target_name, numTestpoints, armRange, offset):
+    def get_park_poseCmd(self, target_name, numTestpoints, armRange, offset, visualize):
         """
         string target_name: name of the target to reach
 
         Returns:
         --------
-        bool sucess: whether a park position was found from which the robot can reach the desired target position or not
+        NavigateToPose.Goal() goal message to navigate agv to the nearest park pose of the given target_tf, if not reachable returns None
         """
-        park_position_reachable = False
 
         # get affine between map and target position from (child), to (parent)
         target_tf = self.get_transform(target_name, 'map')
         
         # Calculate the step size for test points
-        step_size = (armRange-offset) / numTestpoints
+        stepSize = (armRange-offset) / numTestpoints
 
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
-            #calculate new test point on x axis (on the ground - z = 0)
-            testPoint = Affine()
-            testPoint.rotation = np.identity(3)
-            testPoint.translation = testCycle * np.array([step_size, 0, -target_tf.translation[2]])
-
-            # publish test tf only for testing purposes
+            #calculate new test point on x axis (on the ground - z = 0) --> child of target_tf
             test_tf = TransformStamped()
             test_tf.header.frame_id = target_name
-            test_tf.child_frame_id = 'test_position_' + testCycle + target_name
-            test_tf.transform.translation = util.affine_to_transform(testPoint).translation
-            test_tf.transform.rotation = util.affine_to_transform(testPoint).rotation
+            test_tf.child_frame_id = f'Testpos {testCycle}'
+            test_tf.transform.rotation.x = 0.0                                                      # TODO rotate every given tf to vertical z axis
+            test_tf.transform.rotation.y = 0.0
+            test_tf.transform.rotation.z = 0.0
+            test_tf.transform.rotation.w = 1.0
+            test_tf.transform.translation.x = testCycle * stepSize
+            test_tf.transform.translation.y = 0.0
+            test_tf.transform.translation.z = -target_tf.translation[2]
 
-            self.tf_static_broadcaster.sendTransform(test_tf)
+            # publish test tf only for testing purposes
+            if visualize:
+                self.tf_static_broadcaster.sendTransform(test_tf)
 
             # check if test point is in collision or not (frameID, pose)
-            reachable = self.collisionChecker.check_nav_goal()
+            reachable = self.collisionChecker.check_nav_goal(self.tf_to_navCmd(test_tf))
             if reachable:
-                park_position_reachable = True
+                park_tf = test_tf
                 break
-        
-        
+            else:
+                park_tf = None
+                continue
+    
+        # publish nearest park position
         park_tf = TransformStamped()
         park_tf.header.frame_id = target_name
-        park_tf.child_frame_id = 'test_position_' + testCycle + target_name
-        park_tf.transform.translation = util.affine_to_transform(testPoint).translation
-        park_tf.transform.rotation = util.affine_to_transform(testPoint).rotation
-
+        park_tf.child_frame_id = 'park_' + target_name
+        park_tf.transform = test_tf.transform
 
         # publish tf for park position
-        self.tf_static_broadcaster.sendTransform(park_tf)
-        self.get_logger().info(f'published tf for park position of {target_name}')
-        return park_position_reachable
+        if visualize:
+            self.tf_static_broadcaster.sendTransform(park_tf)
+            self.get_logger().info(f'published tf for park position of {target_name}')
+
+        return self.tf_to_navCmd(park_tf)
     
 
    
@@ -183,5 +188,27 @@ class StorageClient(Node):
         with open(path, 'r') as file:
             data = yaml.load(file, Loader=yaml.FullLoader)
         return data
+    
+    @staticmethod
+    def tf_to_navCmd(tf):
+        """
+        TransformStamped() goal tf to navigate agv to (z axis has to be vertical, parent recommendet always 'map' frame for better understanding)
+
+        Returns
+        -------
+        string frameID: frame where the pose is given in e.g. 'map'
+        list pose [x,y,w]: position and quarternion angle (rad) of the goal (geometry_msgs/PoseStamped.msg)
+
+        """
+        frameID = tf.header.frame_id
+        x = tf.transform.translation.x
+        y = tf.transform.translation.y
+        w = tf.transform.rotation.w
+     
+        return frameID, np.array[x,y,w]
+    
+        #return frameID, np.array[x,y,w]
+        #TypeError: 'builtin_function_or_method' object is not subscriptable
+
 
         
