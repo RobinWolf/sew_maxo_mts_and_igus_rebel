@@ -17,18 +17,26 @@ def main():
     time.sleep(5)
 
     # get and publish tf for pos1
-    storage_client.publish_target_tf('desk_test')
+    storage_client.publish_target_tf('shelf_test')
 
     # get and publish tf for park position of pos_1
-    storage_client.get_park_poseCmd('desk_test', 4, 1, 0.2, True)
+    storage_client.get_park_poseCmd('shelf_test', 4, 1, 0.2, True)
 
     # get and publish relative tf from robot base to target (to be used for robot arm motion planning)
     #affine = storage_client.get_transform('igus_tool0', robot_base_frame)   # from (child), to (parent)
     #print(affine)
 
-    time.wait(20)
+    time.sleep(20)
 
-    storage_client.clear_tf('desk_test')
+    storage_client.clear_tf('shelf_test')
+    storage_client.clear_tf('park_shelf_test')
+    storage_client.clear_tf('Testpos_0')
+    storage_client.clear_tf('Testpos_1')
+    storage_client.clear_tf('Testpos_2')
+    storage_client.clear_tf('Testpos_3')
+    storage_client.clear_tf('Testpos_4')
+    storage_client.clear_tf('Testpos_5')
+    storage_client.clear_tf('Testpos_6')
 
 
     # class node shutdown

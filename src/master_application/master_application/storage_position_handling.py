@@ -83,38 +83,47 @@ class StorageClient(Node):
         NavigateToPose.Goal() goal message to navigate agv to the nearest park pose of the given target_tf, if not reachable returns None
         """
 
-        # get affine between map and target position from (child), to (parent)
-        target_tf = self.get_transform(target_name, 'map')
+        # get geometrymsgs/TransformStamped between map and target position from (child), to (parent)
+        target_tf = self.get_transform(target_name, 'map', affine=False)
+        #print (target_tf)
         
         # Calculate the step size for test points
-        stepSize = (armRange-offset) / numTestpoints
+        stepSize = (armRange+offset) / numTestpoints
 
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
             #calculate new test point on x axis (on the ground - z = 0) --> child of target_tf
             test_tf = TransformStamped()
             test_tf.header.frame_id = target_name
-            test_tf.child_frame_id = f'Testpos {testCycle}'
+            test_tf.child_frame_id = f'Testpos_{testCycle}'
             test_tf.transform.rotation.x = 0.0                                                      # TODO rotate every given tf to vertical z axis
             test_tf.transform.rotation.y = 0.0
             test_tf.transform.rotation.z = 0.0
             test_tf.transform.rotation.w = 1.0
             test_tf.transform.translation.x = testCycle * stepSize
             test_tf.transform.translation.y = 0.0
-            test_tf.transform.translation.z = -target_tf.translation[2]
+            test_tf.transform.translation.z = -target_tf.transform.translation.z
+
+            #self.tf_static_broadcaster.sendTransform(test_tf)
+
+            #test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
 
             # publish test tf only for testing purposes
             if visualize:
+                #print(test_tf)
                 self.tf_static_broadcaster.sendTransform(test_tf)
 
             # check if test point is in collision or not (frameID, pose)
-            reachable = self.collisionChecker.check_nav_goal(self.tf_to_navCmd(test_tf))
+            frameID, pose = self.tf_to_navCmd(test_tf)
+            #print(frameID, pose)
+            reachable = self.collisionChecker.check_nav_goal(frameID, pose) # TODO Collision Checker does not  work yet
             if reachable:
                 park_tf = test_tf
-                break
+                self.get_logger().info(f'Test point {testCycle} is reachable...')
+                #break
             else:
                 park_tf = None
-                continue
+                self.get_logger().warn(f'Test point {testCycle} is in collision...')
     
         # publish nearest park position
         park_tf = TransformStamped()
@@ -131,7 +140,7 @@ class StorageClient(Node):
     
 
    
-    def get_transform(self, from_frame_rel, to_frame_rel):
+    def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
         """
         string from_frame_rel: name of the source frame frame to transform from (child)
         string to_frame_rel: name of the target frame to transform into (parent)
@@ -139,6 +148,8 @@ class StorageClient(Node):
         Returns:
         --------
         Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+        or
+        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
         """
         # Calculate the transform between the robot base frame and the target frame
         counter = 0
@@ -155,11 +166,12 @@ class StorageClient(Node):
             try:
                 has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))
                 if has_transform:
-                    trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))   # takes latest available tf in buffer
-                    trans = trans.transform
-                    transform = Affine(
-                        [trans.translation.x, trans.translation.y, trans.translation.z],
-                        [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
+                    transform = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))   # takes latest available tf in buffer
+                    trans = transform.transform
+                    if affine:
+                        transform = Affine(
+                            [trans.translation.x, trans.translation.y, trans.translation.z],
+                            [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
                 
             except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
                 self.get_logger().error(f'Exception during transform {from_frame_rel} to {to_frame_rel} after {counter} tries... {ex}')                
@@ -205,10 +217,8 @@ class StorageClient(Node):
         y = tf.transform.translation.y
         w = tf.transform.rotation.w
      
-        return frameID, np.array[x,y,w]
-    
-        #return frameID, np.array[x,y,w]
-        #TypeError: 'builtin_function_or_method' object is not subscriptable
+        return frameID, np.array([x,y,w])
+
 
 
         
