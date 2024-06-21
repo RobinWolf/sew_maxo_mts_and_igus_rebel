@@ -104,9 +104,9 @@ class StorageClient(Node):
             test_tf.transform.translation.y = 0.0
             test_tf.transform.translation.z = -target_tf.transform.translation.z
 
-            #self.tf_static_broadcaster.sendTransform(test_tf)
+            self.tf_static_broadcaster.sendTransform(test_tf)
 
-            #test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
+            test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
 
             # publish test tf only for testing purposes
             if visualize:
@@ -114,11 +114,11 @@ class StorageClient(Node):
                 self.tf_static_broadcaster.sendTransform(test_tf)
 
             # check if test point is in collision or not (frameID, pose)
-            frameID, pose = self.tf_to_navCmd(test_tf)
-            #print(frameID, pose)
-            reachable = self.collisionChecker.check_nav_goal(frameID, pose) # TODO Collision Checker does not  work yet
+            frameID, pose = self.tf_to_navCmd(test_tf_to_map)
+            print('goal pose to check: ',frameID, pose)
+            reachable = self.collisionChecker.check_nav_goal(frameID, pose)
             if reachable:
-                park_tf = test_tf
+                park_tf = test_tf_to_map
                 self.get_logger().info(f'Test point {testCycle} is reachable...')
                 #break
             else:
