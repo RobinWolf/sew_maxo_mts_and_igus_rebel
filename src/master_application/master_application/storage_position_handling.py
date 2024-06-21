@@ -88,7 +88,7 @@ class StorageClient(Node):
         #print (target_tf)
         
         # Calculate the step size for test points
-        stepSize = (armRange+offset) / numTestpoints
+        stepSize = (armRange+offset) / numTestpoints    # TODO smaller range if goal tf is higher/ arm stretched out
 
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
@@ -120,7 +120,7 @@ class StorageClient(Node):
             if reachable:
                 park_tf = test_tf_to_map
                 self.get_logger().info(f'Test point {testCycle} is reachable...')
-                #break
+                break
             else:
                 park_tf = None
                 self.get_logger().warn(f'Test point {testCycle} is in collision...')

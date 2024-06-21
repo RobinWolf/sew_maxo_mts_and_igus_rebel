@@ -15,7 +15,7 @@ desk_test:
 
 shelf_test:
   position:
-    x: 2.0
+    x: 2.5
     y: 0.0
     z: 1.0
   orientation:
