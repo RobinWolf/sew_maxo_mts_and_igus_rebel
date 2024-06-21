@@ -14,11 +14,11 @@ def main():
     agv = AGVClient()
 
     # call method from client class (string frameID, float64 pose[x,y,w])
-    goal_accepted = agv.check_nav_goal('map',[1.0,0.0,0.0])
-    print('goal accepted: ',goal_accepted)
+    code = agv.check_nav_goal('map',[0.0,0.0,0.0])
+    print('collision checker return statement: ',code)
 
-    error_code = agv.move_to_nav_goal('map',[1.0,0.0,0.0])
-    print('Navigation Return Error Code:', error_code)
+    #error_code = agv.move_to_nav_goal('map',[1.0,0.0,0.0])
+    #print('Navigation Return Error Code:', error_code)
 
     # destroy the agv node, stop execution
     agv.destroy_node()
