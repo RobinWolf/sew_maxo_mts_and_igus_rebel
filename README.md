@@ -79,6 +79,7 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 4) now you shuld be able to navigate the AGV in RVIZ by publishing a new goal pose by first clicking the corresponding button in the top task bar and second the desired goal on the map.  
    <img src="img/rviz_navigation_ongoing.png" alt="drawing" width="300"/>
 5) Motion Planning with the arm sohuld be possible too. Just modify the joint states in the bottom left window and click the "plan and execute" button.
+6) COSTMAP: TODO
 
 
 #### Run a supervised Control Script
@@ -96,15 +97,15 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 
 ***AGV-Control:***
 ```python
-def check_nav_goal(self, frameID, pose):
+def check_nav_goal(self, frameID, pose): 
     """
     string frameID: frame where the pose is given in e.g. 'map'
     list pose [x,y,w]: position and quarternion angle (rad) of the goal
 
     Returns
     -------
-    bool acknowledgement
-
+    bool goal_ok
+    
     """
 def move_to_nav_goal(self, frameID, pose):
     """
@@ -116,11 +117,21 @@ def move_to_nav_goal(self, frameID, pose):
     int status (code which encodes status with navigation has terminated)
 
     """
-
-def collision_checker(): --> TODO!!!
 ```
 ***Robot-Arm-Control:***
 ```python
+def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
+        """
+        string from_frame_rel: name of the source frame frame to transform from (child)
+        string to_frame_rel: name of the target frame to transform into (parent)
+
+        Returns:
+        --------
+        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+        or
+        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+        
+        """
 def reset_planning_group(self, planning_group):
     """
     string planning_group: name of the planning group of the arm (default: igus_6dof)
@@ -179,6 +190,49 @@ def clear_octomap(self):
     Returns
     -------
     None
+    """
+```
+***Storage-Handling:***
+```python
+def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
+        """
+        string from_frame_rel: name of the source frame frame to transform from (child)
+        string to_frame_rel: name of the target frame to transform into (parent)
+
+        Returns:
+        --------
+        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+        or
+        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+
+        """
+
+def publish_target_tf(self, target_name):
+    """
+    string target_name: name of the target to publish its tf
+
+    Returns:
+    --------
+    None
+    
+    """
+def clear_tf(self, tf_name):
+    """
+    string tf_name: name of the target tf to clear
+
+    Returns:
+    --------
+    None
+
+    """
+def get_park_poseCmd(self, target_name, numTestpoints, armRange, offset, visualize):
+    """
+    string target_name: name of the target to reach
+
+    Returns:
+    --------
+    NavigateToPose.Goal() goal message to navigate agv to the nearest park pose of the given target_tf, if not reachable returns None
+
     """
 ```
 

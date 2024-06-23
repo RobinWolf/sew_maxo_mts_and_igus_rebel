@@ -55,45 +55,49 @@ class ARMClient(Node):
     ##############################################################################################################################
     ##           this are the methods which can be called in your application which are communicating to the robot              ##
     ##############################################################################################################################
-    def get_transform(self, from_frame_rel, to_frame_rel):
-            """
-            string to_frame_rel: name of the target frame to transform into
-            string from_frame_rel: name of the source frame frame to transform from
+    def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
+        """
+        string from_frame_rel: name of the source frame frame to transform from (child)
+        string to_frame_rel: name of the target frame to transform into (parent)
 
-            Returns:
-            --------
-            Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
-            """
-            # Calculate the transform between the robot base frame and the target frame
-            counter = 0
-            has_transform = False
-            transform = None
-            while (not has_transform) and counter < 200:
-                rclpy.spin_once(self)
+        Returns:
+        --------
+        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+        or
+        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+        """
+        # Calculate the transform between the robot base frame and the target frame
+        counter = 0
+        has_transform = False
+        transform = None
+        while (not has_transform) and counter < 200:
+            rclpy.spin_once(self)
 
-                counter += 1
-        
-                #if counter % 10 == 0:
-                #    self.get_logger().warn(f'Try to find transform {to_frame_rel} to {from_frame_rel} {counter} times... try again...')
+            counter += 1
+    
+            #if counter % 10 == 0:
+            #    self.get_logger().warn(f'Try to find transform {to_frame_rel} to {from_frame_rel} {counter} times... try again...')
 
-                try:
-                    has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))
-                    if has_transform:
-                        trans = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))   # takes latest available tf in buffer
-                        trans = trans.transform
+            try:
+                has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))
+                if has_transform:
+                    transform = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))   # takes latest available tf in buffer
+                    trans = transform.transform
+                    if affine:
                         transform = Affine(
                             [trans.translation.x, trans.translation.y, trans.translation.z],
                             [trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w])
-                    
-                except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
-                    self.get_logger().error(f'Exception during transform {from_frame_rel} to {to_frame_rel} after {counter} tries... {ex}')                
-                    transform = None
                 
-            if transform != None:    
-                self.get_logger().info(f'Found transform {from_frame_rel} to {to_frame_rel} after {counter} tries') 
-            else:
-                self.get_logger().error(f'Could not transform {from_frame_rel} to {to_frame_rel} after {counter} tries...try again and check passed frame ids...')
-            return transform
+            except (TransformException, LookupException, ConnectivityException, ExtrapolationException) as ex:
+                self.get_logger().error(f'Exception during transform {from_frame_rel} to {to_frame_rel} after {counter} tries... {ex}')                
+                transform = None
+            
+        if transform != None:    
+            self.get_logger().info(f'Found transform {from_frame_rel} to {to_frame_rel} after {counter} tries') 
+        else:
+            self.get_logger().error(f'Could not transform {from_frame_rel} to {to_frame_rel} after {counter} tries...try again and check passed frame ids...')
+        return transform
+
     
 
     def reset_planning_group(self, planning_group) -> bool:
