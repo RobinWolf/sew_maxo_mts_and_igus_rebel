@@ -96,11 +96,7 @@ class StorageClient(Node):
             test_tf = TransformStamped()
             test_tf.header.frame_id = target_name
             test_tf.child_frame_id = f'Testpos_{testCycle}'
-            test_tf.transform.rotation.x = 0.0                                                      # TODO rotate every given tf to vertical z axis
-            test_tf.transform.rotation.y = 0.0
-            test_tf.transform.rotation.z = 0.0
-            test_tf.transform.rotation.w = 1.0
-            test_tf.transform.translation.x = testCycle * stepSize
+            test_tf.transform.translation.x = testCycle * stepSize  # only relative translation to target position, no rotation
             test_tf.transform.translation.y = 0.0
             test_tf.transform.translation.z = -target_tf.transform.translation.z
 
@@ -136,7 +132,7 @@ class StorageClient(Node):
             self.tf_static_broadcaster.sendTransform(park_tf)
             self.get_logger().info(f'published tf for park position of {target_name}')
 
-        return self.tf_to_navCmd(park_tf)
+        return self.tf_to_navCmd(park_tf)   # TODO Needs to be in the map frame, otherwise the agv will not move to the correct position
     
 
    
@@ -217,7 +213,7 @@ class StorageClient(Node):
         y = tf.transform.translation.y
         w = tf.transform.rotation.w
      
-        return frameID, np.array([x,y,w])
+        return frameID, [x,y,w]
 
 
 
