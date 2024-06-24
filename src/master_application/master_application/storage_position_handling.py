@@ -24,6 +24,11 @@ class StorageClient(Node):
         self.tf_buffer = Buffer()
         self.transform_listener = TransformListener(self.tf_buffer, self)
         self.collisionChecker = AGVClient()
+
+        # class variables
+        self.armRange = 0.66
+        self.agvOffset = 0.55
+
         self.get_logger().info('storage handling node initialized')
 
 
@@ -73,14 +78,14 @@ class StorageClient(Node):
         self.get_logger().info(f'Cleared tf for {tf_name}')
 
 
-
-    def get_park_poseCmd(self, target_name, numTestpoints, armRange, offset, visualize):
+    def get_park_poseCmd(self, target_name, stepSize, visualize=True):
         """
         string target_name: name of the target to reach
 
         Returns:
         --------
-        NavigateToPose.Goal() goal message to navigate agv to the nearest park pose of the given target_tf, if not reachable returns None
+        list pose [x,y,w]: position and quarternion angle (rad) of the goal (geometry_msgs/PoseStamped.msg) to navigate agv to the nearest park pose of the given target_tf,
+        if not reachable returns None
         """
 
         # get geometrymsgs/TransformStamped between map and target position from (child), to (parent)
@@ -88,8 +93,8 @@ class StorageClient(Node):
         #print (target_tf)
         
         # Calculate the step size for test points
-        stepSize = (armRange+offset) / numTestpoints    # TODO smaller range if goal tf is higher/ arm stretched out
-
+        numTestpoints = int(self.armRange // stepSize)    # TODO smaller range if goal tf is higher/ arm stretched out
+        print(numTestpoints)
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
             #calculate new test point on x axis (on the ground - z = 0) --> child of target_tf
@@ -102,26 +107,25 @@ class StorageClient(Node):
 
             self.tf_static_broadcaster.sendTransform(test_tf)
 
-            test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
-
             # publish test tf only for testing purposes
             if visualize:
-                #print(test_tf)
                 self.tf_static_broadcaster.sendTransform(test_tf)
 
             # check if test point is in collision or not (frameID, pose)
-            frameID, pose = self.tf_to_navCmd(test_tf_to_map)
+            frameID, pose = self.tf_to_navCmd(test_tf)
             print('goal pose to check: ',frameID, pose)
             reachable = self.collisionChecker.check_nav_goal(frameID, pose)
             if reachable:
-                park_tf = test_tf_to_map
-                self.get_logger().info(f'Test point {testCycle} is reachable...')
+                test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffset
+                test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
+                park_tf = test_tf_to_map                                                
+                self.get_logger().info(f'Test point {testCycle} is not in collision ...')
                 break
             else:
                 park_tf = None
                 self.get_logger().warn(f'Test point {testCycle} is in collision...')
     
-        # publish nearest park position
+        # publish nearest park position                                                         
         park_tf = TransformStamped()
         park_tf.header.frame_id = target_name
         park_tf.child_frame_id = 'park_' + target_name
@@ -132,7 +136,7 @@ class StorageClient(Node):
             self.tf_static_broadcaster.sendTransform(park_tf)
             self.get_logger().info(f'published tf for park position of {target_name}')
 
-        return self.tf_to_navCmd(park_tf)   # TODO Needs to be in the map frame, otherwise the agv will not move to the correct position
+        return self.tf_to_navCmd(park_tf)
     
 
    

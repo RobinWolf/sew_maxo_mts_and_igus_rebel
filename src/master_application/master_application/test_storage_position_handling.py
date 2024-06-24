@@ -21,7 +21,7 @@ def main():
     storage_client.publish_target_tf('shelf_test')
 
     # get and publish tf for park position of pos_1
-    goalFrame, goalCmd = storage_client.get_park_poseCmd('shelf_test', 4, 1, 0.2, True)
+    goalFrame, goalCmd = storage_client.get_park_poseCmd('shelf_test', 0.1, True)
 
     print('goalFrame: ', goalFrame, 'goalCmd: ',goalCmd)
 
