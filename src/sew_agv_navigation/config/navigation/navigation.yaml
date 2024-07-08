@@ -168,7 +168,7 @@ local_costmap:  ## https://docs.nav2.org/configuration/packages/configuring-cost
       global_frame: odom
       robot_base_frame: base_link
       footprint_padding: 0.0
-      footprint:  "[ [0.425,0.3],[-0.425,0.3],[-0.425,-0.3],[0.425,-0.3] ]"
+      footprint:  "[ [0.45,0.325],[-0.45,0.325],[-0.45,-0.325],[0.45,-0.325] ]"
       use_sim_time: True  # reconfigured in launch file with launch argument
       rolling_window: true
       width: 20
@@ -178,7 +178,7 @@ local_costmap:  ## https://docs.nav2.org/configuration/packages/configuring-cost
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 0.50        
+        inflation_radius: 0.30        
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -253,7 +253,7 @@ global_costmap: ## https://docs.nav2.org/configuration/packages/configuring-cost
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 1.0
+        inflation_radius: 0.3
       always_send_full_costmap: True
 
   global_costmap_client:
