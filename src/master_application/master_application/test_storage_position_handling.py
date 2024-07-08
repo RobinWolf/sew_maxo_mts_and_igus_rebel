@@ -21,15 +21,13 @@ def main():
     storage_client.publish_target_tf('shelf_test')
 
     # get and publish tf for park position of pos_1
-    goalFrame, goalCmd = storage_client.get_park_poseCmd('shelf_test', 0.1, True)
+    goalFrame, goalCmd = storage_client.get_park_poseCmd('shelf_test', True)
 
     print('goalFrame: ', goalFrame, 'goalCmd: ',goalCmd)
 
     # call method from client class (string frameID, float64 pose[x,y,w])
     code = agv.move_to_nav_goal(goalFrame,goalCmd)
     print('collision checker return statement: ',code)
-
-
 
     time.sleep(20)
 
