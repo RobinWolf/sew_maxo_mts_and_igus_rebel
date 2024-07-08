@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 import yaml
+import math
 import tf_transformations as tft
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
@@ -15,6 +16,7 @@ from igus_moveit_clients.transform import Affine
 from sew_agv_clients.agv import AGVClient
 
 
+
 class StorageClient(Node):
     def __init__(self):
         super().__init__('storage_position_handling_client_node')
@@ -25,9 +27,11 @@ class StorageClient(Node):
         self.transform_listener = TransformListener(self.tf_buffer, self)
         self.collisionChecker = AGVClient()
 
-        # class variables
+        # class variables, can be modified for other hardware setups, this are defaults for sew maxo mts and igus rebel (SS24)
         self.armRange = 0.66
         self.agvOffset = 0.55
+        self.stepSize = 0.1
+        self.joint1Heigth = 0.6 # -----------------------------------------> TODO: get this value from the robot model
 
         self.get_logger().info('storage handling node initialized')
 
@@ -78,7 +82,7 @@ class StorageClient(Node):
         self.get_logger().info(f'Cleared tf for {tf_name}')
 
 
-    def get_park_poseCmd(self, target_name, stepSize, visualize=True):
+    def get_park_poseCmd(self, target_name, visualize=True):
         """
         string target_name: name of the target to reach
 
@@ -92,8 +96,11 @@ class StorageClient(Node):
         target_tf = self.get_transform(target_name, 'map', affine=False)
         #print (target_tf)
         
+        # set valid search space for park position in relation to the height of the target position
+        searchRange = math.sqrt(self.armRange**2 - (target_tf.transform.translation.z-self.joint1Heigth)**2)
+        print("### searchRange ### : ", searchRange)
         # Calculate the step size for test points
-        numTestpoints = int(self.armRange // stepSize)    # TODO smaller range if goal tf is higher/ arm stretched out
+        numTestpoints = int(searchRange // self.stepSize) 
         print(numTestpoints)
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
@@ -101,7 +108,7 @@ class StorageClient(Node):
             test_tf = TransformStamped()
             test_tf.header.frame_id = target_name
             test_tf.child_frame_id = f'Testpos_{testCycle}'
-            test_tf.transform.translation.x = testCycle * stepSize  # only relative translation to target position, no rotation
+            test_tf.transform.translation.x = testCycle * self.stepSize  # only relative translation to target position, no rotation
             test_tf.transform.translation.y = 0.0
             test_tf.transform.translation.z = -target_tf.transform.translation.z
 
@@ -113,7 +120,6 @@ class StorageClient(Node):
 
             # check if test point is in collision or not (frameID, pose)
             frameID, pose = self.tf_to_navCmd(test_tf)
-            print('goal pose to check: ',frameID, pose)
             reachable = self.collisionChecker.check_nav_goal(frameID, pose)
             if reachable:
                 test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffset
