@@ -31,7 +31,7 @@ class StorageClient(Node):
         self.armRange = 0.66
         self.agvOffset = 0.55
         self.stepSize = 0.1
-        self.joint1Heigth = 0.6 # -----------------------------------------> TODO: get this value from the robot model
+        self.joint1Heigth = 0.86
 
         self.get_logger().info('storage handling node initialized')
 
