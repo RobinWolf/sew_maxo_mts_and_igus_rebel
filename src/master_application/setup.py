@@ -25,7 +25,8 @@ setup(
         'console_scripts': [
             'test_agv = master_application.test_agv_client:main',
             'test_robot = master_application.test_arm_client:main',
-            'storage_position_handling = master_application.test_storage_position_handling:main',  
+            'test_storage = master_application.test_storage_position_handling:main',
+            'test_pipeline = master_application.test_complete_pipeline:main',  
         ],
     },
 )
