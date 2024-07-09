@@ -129,7 +129,7 @@
   <joint name="adapterplate_to_$(arg prefix)base" type="fixed">
     <parent link="adapterplate_link" />      
     <child link = "$(arg prefix)base_link" />   
-    <origin xyz="0.19 -0.015 0.023" rpy="0 0 -1.57" />   
+    <origin xyz="0.19 -0.015 0.023" rpy="0 0 1.57" />   
   </joint>
 
 </robot>
