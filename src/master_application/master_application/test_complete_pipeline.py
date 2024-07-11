@@ -35,35 +35,35 @@ def navigate_to_park_pose(storage, agv, target_name):
     storage.publish_target_tf(target_name)
 
     # get and publish tf for park position of pos_1
-    visualize_tf = False
-    goalFrame, goalCmd = storage.get_park_poseCmd(target_name, visualize_tf)
-
-    if goalFrame == None:
-        print('No park pose found from which the arm can theoretically reach the target: ', target_name)
+    goal_msg = storage.get_park_poseCmd(target_name)
+    if goal_msg == None:
         return None
 
     # navigate to to the approach pose for the target
     storage.publish_approach_tf(target_name)
     approach_name = storage.get_approach_name(target_name)
-    approachFrame, approachCmd = storage.tf_to_navCmd(storage.get_transform(approach_name, 'map', affine=False))
-
-    print('ApprochCMD:', approach_name, approachCmd)
-    code_approach = agv.move_to_nav_goal(approachFrame,approachCmd)
+    approach_msg = storage.tf_to_navCmd(storage.get_transform(approach_name, 'map', affine=False))
+    code_approach = agv.move_to_nav_goal(approach_msg)
 
     # navigate to to the park pose for the target
-    code = agv.move_to_nav_goal(goalFrame,goalCmd)
+    code = agv.move_to_nav_goal(goal_msg)
+    return True
 
-    if visualize_tf:
-        time.sleep(20)
-        storage.clear_tf(target_name)
-        storage.clear_tf(target_name+'_park')
-        storage.clear_tf('Testpos_0')
-        storage.clear_tf('Testpos_1')
-        storage.clear_tf('Testpos_2')
-        storage.clear_tf('Testpos_3')
-        storage.clear_tf('Testpos_4')
-        storage.clear_tf('Testpos_5')
-        storage.clear_tf('Testpos_6')
+
+def delete_punlished_tfs(storage, target_name):
+    # delete published tfs
+    time.sleep(20)
+    storage.clear_tf(target_name)
+    storage.clear_tf(storage.get_approach_name(target_name))
+    storage.clear_tf(target_name+'_park')
+    storage.clear_tf('Testpos_0')
+    storage.clear_tf('Testpos_1')
+    storage.clear_tf('Testpos_2')
+    storage.clear_tf('Testpos_3')
+    storage.clear_tf('Testpos_4')
+    storage.clear_tf('Testpos_5')
+    storage.clear_tf('Testpos_6')
+
 
 def record_octomap(robot):
     # move to camera record position 1
@@ -83,10 +83,22 @@ def record_octomap(robot):
 
   
 
-def move_arm_to_target(robot, target_name):
-    eins = 1
+def move_arm_to_target(storage, robot, target_name):
+    # get and publish tf of target
+    storage.publish_target_tf(target_name)
+
+    # get transform target pose to robot base frame
+    robot_affine_tf = storage.get_transform(target_name, 'igus_base_link', affine=True)
+    print('Robot_tf_to execute:', robot_affine_tf)
+    sucess = robot.ptp(robot_affine_tf)
+    print('Success Robot Motion:', sucess)
 
 
+
+
+################################################################################################################################################
+####                                                            main()                                                                      ####
+################################################################################################################################################             
 
 def main():
     # initialize ros communications for a given context 
@@ -96,22 +108,21 @@ def main():
     robot, agv, storage = init_nodes()
     time.sleep(5)
 
-    # record_octomap(robot)
-
+    # target pose (currently hardcoded, maybe in future as user input
+    target = 'shelf_test'
     # navigate to park pose
-    sucess = navigate_to_park_pose(storage, agv, 'shelf_test')
+    sucess = navigate_to_park_pose(storage, agv, target)
 
-    # #if navigation sucess, record octomap and move arm to target
-    # if sucess:
-    #     record_octomap(robot)
-
-
-
+    # if navigation sucess, record octomap and move arm to target
+    if sucess:
+        record_octomap(robot)
+        move_arm_to_target(storage, robot, target)                                                              ### TODO, wrong TF, need to be fixed
 
 
-
-    # destroyall nodes stop execution
+    # destroy all nodes stop execution
+    delete_punlished_tfs(storage, target)
     destroy_nodes(robot, agv, storage)
+
     # shutdown previously initialized context
     rclpy.shutdown()
 

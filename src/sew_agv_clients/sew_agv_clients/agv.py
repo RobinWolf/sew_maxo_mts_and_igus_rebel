@@ -22,22 +22,15 @@ class AGVClient(Node):
         self.get_logger().info("compute_path_to_pose_client action available")
 
 
-    def move_to_nav_goal(self, frameID, pose):
+    def move_to_nav_goal(self, goal_msg):
         """
-        string frameID: frame where the pose is given in e.g. 'map'
-        list pose [x,y,w]: position and quarternion angle (rad) of the goal (geometry_msgs/PoseStamped.msg)
+        nav2_msgs/action/NavigateToPose.action.goal: goal pose 
 
         Returns
         -------
         int status (no further response message provided)
 
         """
-        goal_msg = NavigateToPose.Goal() # goal field of acrion definition
-        goal_msg.pose.header.frame_id = frameID # geometry_msgs/PoseStamped.msg
-        goal_msg.pose.pose.position.x = pose[0]
-        goal_msg.pose.pose.position.y = pose[1] 
-        goal_msg.pose.pose.orientation.w = pose[2]  
-
         goal_future = self.send_action_request(goal_msg, self.nav_to_pose_client)   # send goal to action server of initialized client
         goal_handle = self.wait_for_action_goal_acknowledgment(goal_future) # check goal if accepted and return object representing the state of the goal request
 
@@ -47,10 +40,9 @@ class AGVClient(Node):
         return status
     
 
-    def check_nav_goal(self, frameID, pose): 
+    def check_nav_goal(self, goal_msg): 
         """
-        string frameID: frame where the pose is given in e.g. 'map'
-        list pose [x,y,w]: position and quarternion angle (rad) of the goal
+        nav2_msgs/action/NavigateToPose.action.goal: goal pose 
 
         Returns
         -------
@@ -58,15 +50,12 @@ class AGVClient(Node):
         """
         goal_ok = None
 
-        goal_msg = ComputePathToPose.Goal()
-        goal_msg.goal.header.frame_id = frameID
-        goal_msg.goal.pose.position.x = pose[0]
-        goal_msg.goal.pose.position.y = pose[1] 
-        goal_msg.goal.pose.orientation.w = pose[2]
-        goal_msg.planner_id = "GridBased"  # default planner_id
-        goal_msg.use_start = False  
+        check_goal_msg = ComputePathToPose.Goal()
+        check_goal_msg.goal = goal_msg.pose
+        check_goal_msg.planner_id = "GridBased"  # default planner_id
+        check_goal_msg.use_start = False  
 
-        goal_future = self.send_action_request(goal_msg, self.compute_path_to_pose_client)   # send goal to action server of initialized client
+        goal_future = self.send_action_request(check_goal_msg, self.compute_path_to_pose_client)   # send goal to action server of initialized client
         goal_handle = self.wait_for_action_goal_acknowledgment(goal_future) # check goal if accepted and return object representing the state of the goal request
 
         result = self.wait_for_action_result(goal_handle)   # check if goal is reached/ action finished

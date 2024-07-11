@@ -19,7 +19,7 @@ from sew_agv_clients.agv import AGVClient
 
 class StorageClient(Node):
     def __init__(self):
-        super().__init__('storage_position_handling_client_node')
+        super().__init__('storage_client_node')
         self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)   # broadcaster to publish by transforms relative to the map frame in tf tree (/tf_static)
         self.positions_config_path = None # default: '/home/ros2_ws/src/master_application/config/positions.yaml'
@@ -30,6 +30,7 @@ class StorageClient(Node):
         # class variables, can be modified for other hardware setups, this are defaults for sew maxo mts and igus rebel (SS24)
         self.armRange = 0.66
         self.agvOffset = 0.55
+        self.robotOffset = -0.19
         self.stepSize = 0.1
         self.joint1Heigth = 0.86
 
@@ -102,7 +103,7 @@ class StorageClient(Node):
 
         # publish tf
         self.tf_static_broadcaster.sendTransform(approach_tf)
-        self.get_logger().info(f'published tf for {approach_tf}')
+        self.get_logger().info(f'published tf for {approach_name}')
         
         
     def clear_tf(self, tf_name):
@@ -124,23 +125,22 @@ class StorageClient(Node):
         self.get_logger().info(f'Cleared tf for {tf_name}')
 
 
-    def get_park_poseCmd(self, target_name, visualize=True):
+    def get_park_poseCmd(self, target_name):
         """
         string target_name: name of the target to reach
 
         Returns:
         --------
-        list pose [x,y,w]: position and quarternion angle (rad) of the goal (geometry_msgs/PoseStamped.msg) to navigate agv to the nearest park pose of the given target_tf,
+        nav2_msgs/action/NavigateToPose.action.goal: goal pose         
         if not reachable returns None
         """
-
         # get geometrymsgs/TransformStamped between map and target position from (child), to (parent)
         target_tf = self.get_transform(target_name, 'map', affine=False)
         #print (target_tf)
         
         # set valid search space for park position in relation to the height of the target position
         searchRange = math.sqrt(self.armRange**2 - (target_tf.transform.translation.z-self.joint1Heigth)**2)
-        print("### searchRange ### : ", searchRange)
+        # print("### searchRange ### : ", searchRange)
         # Calculate the step size for test points
         numTestpoints = int(searchRange // self.stepSize) 
         print(numTestpoints)
@@ -156,15 +156,12 @@ class StorageClient(Node):
 
             self.tf_static_broadcaster.sendTransform(test_tf)
 
-            # publish test tf only for testing purposes
-            if visualize:
-                self.tf_static_broadcaster.sendTransform(test_tf)
-
-            # check if test point is in collision or not (frameID, pose)
-            frameID, pose = self.tf_to_navCmd(test_tf)
-            reachable = self.collisionChecker.check_nav_goal(frameID, pose)
+            # check if test point is in collision or not (goal_msg)
+            goal_msg = self.tf_to_navCmd(test_tf)
+            reachable = self.collisionChecker.check_nav_goal(goal_msg)
             if reachable:
                 test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffset
+                test_tf.transform.translation.y = test_tf.transform.translation.y + self.robotOffset
                 test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
                 park_tf = test_tf_to_map                                                
                 self.get_logger().info(f'Test point {testCycle} is not in collision ...')
@@ -172,7 +169,12 @@ class StorageClient(Node):
             else:
                 park_tf = None
                 self.get_logger().warn(f'Test point {testCycle} is in collision...')
-    
+
+        # return None if no park position found in range
+        if park_tf == None:
+            self.get_logger().error(f'No park pose found from which the arm can theoretically reach the target: {target_name}')
+            return None
+        
         # publish nearest park position                                                         
         park_tf = TransformStamped()
         park_tf.header.frame_id = target_name
@@ -180,9 +182,8 @@ class StorageClient(Node):
         park_tf.transform = test_tf.transform
 
         # publish tf for park position
-        if visualize:
-            self.tf_static_broadcaster.sendTransform(park_tf)
-            self.get_logger().info(f'published tf for park position of {target_name}')
+        self.tf_static_broadcaster.sendTransform(park_tf)
+        self.get_logger().info(f'published tf for park position of {target_name}')
 
         return self.tf_to_navCmd(park_tf)
     
@@ -207,9 +208,6 @@ class StorageClient(Node):
             rclpy.spin_once(self)
 
             counter += 1
-    
-            #if counter % 10 == 0:
-            #    self.get_logger().warn(f'Try to find transform {to_frame_rel} to {from_frame_rel} {counter} times... try again...')
 
             try:
                 has_transform = self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, time=Time(), timeout=Duration(seconds=0.01))
@@ -256,16 +254,19 @@ class StorageClient(Node):
 
         Returns
         -------
-        string frameID: frame where the pose is given in e.g. 'map'
-        list pose [x,y,w]: position and quarternion angle (rad) of the goal (geometry_msgs/PoseStamped.msg)
-
+        nav2_msgs/action/NavigateToPose.action.goal: goal pose 
         """
-        frameID = tf.header.frame_id
-        x = tf.transform.translation.x
-        y = tf.transform.translation.y
-        w = tf.transform.rotation.w
+        goal_msg = NavigateToPose.Goal() # goal field of action definition
+        goal_msg.pose.header.frame_id = tf.header.frame_id # geometry_msgs/PoseStamped.msg
+        goal_msg.pose.pose.position.x = tf.transform.translation.x
+        goal_msg.pose.pose.position.y = tf.transform.translation.y
+        goal_msg.pose.pose.position.z = tf.transform.translation.z
+        goal_msg.pose.pose.orientation.x = tf.transform.rotation.x
+        goal_msg.pose.pose.orientation.y = tf.transform.rotation.y
+        goal_msg.pose.pose.orientation.z = tf.transform.rotation.z
+        goal_msg.pose.pose.orientation.w = tf.transform.rotation.w  
      
-        return frameID, [x,y,w]
+        return goal_msg
 
 
 
