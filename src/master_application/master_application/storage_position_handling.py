@@ -61,6 +61,48 @@ class StorageClient(Node):
         # publish tf
         self.tf_static_broadcaster.sendTransform(target_tf)
         self.get_logger().info(f'published tf for {target_name}')
+
+    def get_approach_name(self, target_name):
+        """
+        string target_name: name of the target to reach
+
+        Returns:
+        --------
+        string approach_name: name of the approach pose for the given target
+        """
+        # load target data from yaml file
+        target_data = self.load_yaml(self.positions_config_path)[target_name]
+        approach_name = target_data['approach']
+        return approach_name
+
+
+    def publish_approach_tf(self, target_name):
+        """
+        string target_name: name of the target to publish its tf
+
+        Returns:
+        --------
+        None
+        """
+        # load approach data from yaml file
+        approach_name = self.get_approach_name(target_name)
+        approach_data = self.load_yaml(self.positions_config_path)[approach_name]
+
+        approach_tf = TransformStamped()
+        approach_tf.header.frame_id = 'map'
+        approach_tf.child_frame_id = approach_name
+        approach_tf.header.stamp =  self.get_clock().now().to_msg()
+        approach_tf.transform.translation.x = approach_data['position']['x']
+        approach_tf.transform.translation.y = approach_data['position']['y']
+        approach_tf.transform.translation.z = approach_data['position']['z']
+        approach_tf.transform.rotation.x = approach_data['orientation']['x']
+        approach_tf.transform.rotation.y = approach_data['orientation']['y']  
+        approach_tf.transform.rotation.z = approach_data['orientation']['z']
+        approach_tf.transform.rotation.w = approach_data['orientation']['w']
+
+        # publish tf
+        self.tf_static_broadcaster.sendTransform(approach_tf)
+        self.get_logger().info(f'published tf for {approach_tf}')
         
         
     def clear_tf(self, tf_name):

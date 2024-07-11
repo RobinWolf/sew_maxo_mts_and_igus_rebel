@@ -39,10 +39,18 @@ def navigate_to_park_pose(storage, agv, target_name):
     goalFrame, goalCmd = storage.get_park_poseCmd(target_name, visualize_tf)
 
     if goalFrame == None:
-        print('No park pose found in which the arm can theoretically reach the target: ', target_name)
+        print('No park pose found from which the arm can theoretically reach the target: ', target_name)
         return None
 
-    # call method from client class (string frameID, float64 pose[x,y,w])
+    # navigate to to the approach pose for the target
+    storage.publish_approach_tf(target_name)
+    approach_name = storage.get_approach_name(target_name)
+    approachFrame, approachCmd = storage.tf_to_navCmd(storage.get_transform(approach_name, 'map', affine=False))
+
+    print('ApprochCMD:', approach_name, approachCmd)
+    code_approach = agv.move_to_nav_goal(approachFrame,approachCmd)
+
+    # navigate to to the park pose for the target
     code = agv.move_to_nav_goal(goalFrame,goalCmd)
 
     if visualize_tf:
@@ -88,10 +96,10 @@ def main():
     robot, agv, storage = init_nodes()
     time.sleep(5)
 
-    record_octomap(robot)
+    # record_octomap(robot)
 
     # navigate to park pose
-    # sucess = navigate_to_park_pose(storage, agv, 'shelf_test')
+    sucess = navigate_to_park_pose(storage, agv, 'shelf_test')
 
     # #if navigation sucess, record octomap and move arm to target
     # if sucess:

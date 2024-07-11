@@ -2,18 +2,79 @@
 # these are defined relative to the map frame, and are used to navigate the robot to the desired position
 # the positions have to be set up after our convention (x to the corridor, y to the shelf, z to the height, only z rotation)
 
-desk_test:
+#############################################################################################################################
+###                                        Approch posittions for the shelf corridors                                     ###
+#############################################################################################################################
+approach_corridor_1:
   position:
-    x: -4.5
-    y: -2.4
+    x: 1.0
+    y: 3.6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
     z: 1.0
+    w: 0.0
+approach_corridor_2:
+  position:
+    x: 1.0
+    y: 1.2
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 1.0
+    w: 0.0
+approach_corridor_3:
+  position:
+    x: 1.0
+    y: -1.2
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 1.0
+    w: 0.0
+approach_corridor_4:
+  position:
+    x: 1.0
+    y: -3.6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 1.0
+    w: 0.0
+
+#############################################################################################################################
+###                                               Approch posittions for the desks                                        ###
+#############################################################################################################################
+approach_desk_1:
+  position:
+    x: -2.0
+    y: 3.0
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+approach_desk_2:
+  position:
+    x: -2.0
+    y: -3.0
+    z: 0.0
   orientation:
     x: 0.0
     y: 0.0
     z: 0.0
     w: 1.0
 
+#############################################################################################################################
+###                                           Storage Positions (Boxes) in the shelf                                      ###
+#############################################################################################################################
 shelf_test:
+  approach: approach_corridor_2
   position:
     x: 2.5
     y: 0.0
@@ -24,3 +85,17 @@ shelf_test:
     z: 1.0
     w: 1.0
     
+#############################################################################################################################
+###                                           Storage Positions (Boxes) on the desks                                      ###
+#############################################################################################################################
+desk_test:
+  approach: approach_desk_2
+  position:
+    x: -4.5
+    y: -2.4
+    z: 1.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
