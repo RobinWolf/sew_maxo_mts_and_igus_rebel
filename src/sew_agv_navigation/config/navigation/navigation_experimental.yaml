@@ -11,7 +11,7 @@ amcl:     ## https://docs.nav2.org/configuration/packages/configuring-amcl.html 
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
     do_beamskip: false
-    global_frame_id: "map"  #
+    global_frame_id: "map" 
     lambda_short: 0.1
     set_initial_pose: false
     laser_likelihood_max_dist: 2.0
@@ -39,8 +39,14 @@ amcl:     ## https://docs.nav2.org/configuration/packages/configuring-amcl.html 
     z_rand: 0.5
     z_short: 0.005
     always_reset_initial_pose: false
-    scan_topic: /scan #
-    map_topic: /map #
+    scan_topic: /scan 
+    map_topic: /map
+    set_initial_pose: true
+    initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    yaw: 0.0
 
 
 amcl_map_client:
@@ -124,15 +130,15 @@ controller_server:
       max_vel_x: 0.5
       max_vel_y: 0.0
       max_vel_theta: 0.5
-      min_speed_xy: -0.26   # set to 0 if you want to drive forwards only
-      max_speed_xy: 0.26
-      min_speed_theta: -0.5
-      acc_lim_x: 2.5
+      min_speed_xy: -0.25   # set to 0 if you want to drive forwards only
+      max_speed_xy: 0.25
+      min_speed_theta: -0.25
+      acc_lim_x: 1.5
       acc_lim_y: 0.0
-      acc_lim_theta: 3.2
-      decel_lim_x: -2.5
+      acc_lim_theta: 1.5
+      decel_lim_x: -1.5
       decel_lim_y: 0.0
-      decel_lim_theta: -3.2
+      decel_lim_theta: -1.5
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 20
@@ -140,7 +146,7 @@ controller_server:
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
-      xy_goal_tolerance: 0.25  # choose as a trade off between position accuracy and reachability
+      xy_goal_tolerance: 0.15  # choose as a trade off between position accuracy and reachability
       trans_stopped_velocity: 0.25
       short_circuit_trajectory_evaluation: True
       stateful: True
@@ -316,9 +322,9 @@ recoveries_server:  ##called in bt_navigator
     transform_timeout: 0.1
     use_sim_time: False  # reconfigured in launch file with launch argument
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.5
+    max_rotational_vel: 0.25
     min_rotational_vel: 0.1
-    rotational_acc_lim: 3.2
+    rotational_acc_lim: 1.5
 
 waypoint_follower: 
   ros__parameters:
