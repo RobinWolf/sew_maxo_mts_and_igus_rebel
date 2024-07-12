@@ -49,19 +49,25 @@ namespace moveit_wrapper
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "Initialized.");
     }
 
-    //set up private functions which are binded to the service callback functions
     void MoveitWrapper::init_move_group()
     {
         static const std::string PLANNING_GROUP = _planning_group;
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), PLANNING_GROUP.c_str());
         _move_group.reset(new moveit::planning_interface::MoveGroupInterface(shared_from_this(), _planning_group));
 
+        // set goal planning time
+        _move_group->setPlanningTime(1.0);
+
+        // set refernce frame for planning to ur_base_link
+        _move_group->setPoseReferenceFrame("igus_base_link");
+
+
         _i_move_group_initialized = true;
+
         rclcpp::Rate loop_rate(1000);
         loop_rate.sleep();
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "Ready to receive commands.");
     }
-
 
     void MoveitWrapper::reset_planning_group(const std::shared_ptr<moveit_wrapper::srv::String::Request> request,
                 std::shared_ptr<moveit_wrapper::srv::String::Response> response)
@@ -72,9 +78,6 @@ namespace moveit_wrapper
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), _planning_group.c_str());
         _move_group->stop();
         _move_group->clearPoseTargets();
-
-        // set goal planning time
-        _move_group->setPlanningTime(2.0);
 
         init_move_group();
         

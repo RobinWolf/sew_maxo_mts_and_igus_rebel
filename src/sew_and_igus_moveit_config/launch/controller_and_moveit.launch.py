@@ -167,13 +167,13 @@ def opaque_test(context, *args, **kwargs):
             "kinematics.yaml",
         ]
     )
-    robot_description_kinematics = ReplaceString(
-        source_file=robot_description_kinematics_file,
-        replacements={
-            "<namespace>": namespace,
-            "<prefix>": prefix,
-        },
-    )
+    # robot_description_kinematics = ReplaceString(
+    #     source_file=robot_description_kinematics_file,
+    #     replacements={
+    #         "<namespace>": namespace,
+    #         "<prefix>": prefix,
+    #     },
+    # )
 
     planning_pipeline = {
         "move_group": {
@@ -207,7 +207,7 @@ def opaque_test(context, *args, **kwargs):
     moveit_args_not_concatenated = [
         {"robot_description": robot_description.perform(context)},
         {"robot_description_semantic": robot_description_semantic.perform(context)},
-        load_yaml(Path(robot_description_kinematics.perform(context))),
+        #load_yaml(Path(robot_description_kinematics.perform(context))),
         load_yaml(Path(joint_limits.perform(context))),
         moveit_controllers,
         planning_scene_monitor_parameters,
@@ -238,6 +238,7 @@ def opaque_test(context, *args, **kwargs):
         namespace=namespace,
         parameters=[
             moveit_args,
+            robot_description_kinematics_file,
             {'use_sim_time': use_sim_time}
         ],
     )
@@ -247,7 +248,7 @@ def opaque_test(context, *args, **kwargs):
         package="moveit_wrapper",
         executable="moveit_wrapper_node",
         output="screen",
-        parameters=[robot_description, robot_description_semantic, robot_description_kinematics, planning_group],
+        parameters=[robot_description, robot_description_semantic, robot_description_kinematics_file, planning_group],
     )
 
     # only launch with real hardware -> TODO
@@ -288,6 +289,7 @@ def opaque_test(context, *args, **kwargs):
             {"robot_description": robot_description},
             {'use_sim_time': use_sim_time},
             moveit_args,
+            robot_description_kinematics_file,
         ],
         condition=IfCondition(launch_rviz),
     )
