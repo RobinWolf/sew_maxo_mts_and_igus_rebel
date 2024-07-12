@@ -72,10 +72,11 @@ namespace moveit_wrapper
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), _planning_group.c_str());
         _move_group->stop();
         _move_group->clearPoseTargets();
-        init_move_group();
 
         // set goal planning time
         _move_group->setPlanningTime(2.0);
+
+        init_move_group();
         
         response->success = true;
         RCLCPP_INFO(rclcpp::get_logger("moveit_wrapper"), "reset_planning_group callback executed.");
@@ -91,6 +92,9 @@ namespace moveit_wrapper
             _move_group->stop();
             _move_group->clearPoseTargets();
             _move_group->setStartStateToCurrentState();
+
+            // set planning reference frame according to out robot system
+            _move_group->setPoseReferenceFrame("igus_base_link");
 
             //https://github.com/moveit/moveit2/blob/main/moveit_ros/visualization/motion_planning_rviz_plugin/src/motion_planning_frame_planning.cpp
 
@@ -144,7 +148,9 @@ namespace moveit_wrapper
             _move_group->stop();
             _move_group->clearPoseTargets();
             _move_group->setStartStateToCurrentState();
-
+                    
+            // set planning reference frame according to out robot system
+            _move_group->setPoseReferenceFrame("igus_base_link");
 
             _move_group->setPoseTarget(request->pose);
             
