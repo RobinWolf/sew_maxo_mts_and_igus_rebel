@@ -107,6 +107,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     ros-${ROS_DISTRO}-tf-transformations
 
 RUN apt-get update && apt-get install -y pip
+RUN apt-get update && apt-get install -y libnlopt*
 
 RUN pip install transforms3d
 RUN pip install scipy

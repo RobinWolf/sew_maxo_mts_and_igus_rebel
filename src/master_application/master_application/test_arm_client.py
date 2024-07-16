@@ -15,16 +15,27 @@ def main():
     robot = ARMClient()
 
     #define a home position (when want to use default [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] you don't need this definition) -> floats required
-    robot.home_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    robot.home_position = [-3.0, 0.0, 1.57, 0.0, -0.87, 0.0]
+    robot.setVelocity(0.5)
 
     # move robot to home position
-    # print("move robot to home position")
-    # robot.home()
+    #robot.home()
 
-    # time.sleep(5)
+    #pose = robot.get_transform('igus_tool0', 'igus_base_link', affine=False)
+    affine = robot.get_transform('igus_tool0', 'igus_base_link', affine=True)
+ 
+    world_movement = Affine((0.0,0.0,-0.2))
+    new_affine = world_movement * affine
 
-    # robot.home()
-    robot.clear_octomap()
+    print('New Affine:', new_affine)
+    #print('Pose_tf', pose)
+    print('Pose_affine', affine)
+
+
+    # move robot to a specific position
+    feedback = robot.lin(new_affine)
+    print('Feedback:', feedback)
+
 
     # destroy the robot node, stop execution
     robot.destroy_node()
