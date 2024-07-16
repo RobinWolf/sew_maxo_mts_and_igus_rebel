@@ -248,7 +248,7 @@ def opaque_test(context, *args, **kwargs):
         package="moveit_wrapper",
         executable="moveit_wrapper_node",
         output="screen",
-        parameters=[robot_description, robot_description_semantic, robot_description_kinematics_file, planning_group],
+        parameters=[robot_description, robot_description_semantic, robot_description_kinematics_file, planning_group, {'use_sim_time': use_sim_time}],
     )
 
     # only launch with real hardware -> TODO
