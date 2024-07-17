@@ -50,12 +50,12 @@ def navigate_to_park_pose(storage, agv, target_name):
     return True
 
 
-def delete_punlished_tfs(storage, target_name):
+def delete_published_tfs(storage, target_name):
     # delete published tfs
     time.sleep(20)
     storage.clear_tf(target_name)
     storage.clear_tf(storage.get_approach_name(target_name))
-    storage.clear_tf(target_name+'_park')
+    storage.clear_tf('park_' + target_name)
     storage.clear_tf('Testpos_0')
     storage.clear_tf('Testpos_1')
     storage.clear_tf('Testpos_2')
@@ -63,6 +63,8 @@ def delete_punlished_tfs(storage, target_name):
     storage.clear_tf('Testpos_4')
     storage.clear_tf('Testpos_5')
     storage.clear_tf('Testpos_6')
+    storage.clear_tf('robot_target_after_turn')
+    storage.clear_tf('robot_target_before_turn')    
 
 
 def record_octomap(robot):
@@ -89,9 +91,19 @@ def move_arm_to_target(storage, robot, target_name):
 
     # get transform target pose to robot base frame
     robot_affine_tf = storage.get_transform(target_name, 'igus_base_link', affine=True)
+    #print('Robot_tf_to Target:', robot_affine_tf)
+    #storage.publish_affine_tf('igus_base_link', 'robot_target_before_turn', robot_affine_tf)
+
+    # turn target tf 180deg round the z axis, to align gripper with target pose
+    turn_180 = Affine((0.0,0.0,0.0),(0.0,0.0,1.0,0.0))
+    robot_affine_tf = robot_affine_tf * turn_180
+
     print('Robot_tf_to execute:', robot_affine_tf)
+    storage.publish_affine_tf('igus_base_link', 'robot_target_after_turn', robot_affine_tf)
+
     sucess = robot.ptp(robot_affine_tf)
     print('Success Robot Motion:', sucess)
+    return sucess
 
 
 
@@ -116,11 +128,15 @@ def main():
     # if navigation sucess, record octomap and move arm to target
     if sucess:
         record_octomap(robot)
-        move_arm_to_target(storage, robot, target)                                                              ### TODO, wrong TF, need to be fixed
+        robot_sucess = False
+        counter = 0
+        while not robot_sucess and counter < 3:
+            counter += 1 
+            robot_sucess = move_arm_to_target(storage, robot, target)
 
 
     # destroy all nodes stop execution
-    delete_punlished_tfs(storage, target)
+    delete_published_tfs(storage, target)
     destroy_nodes(robot, agv, storage)
 
     # shutdown previously initialized context
