@@ -11,13 +11,15 @@ from igus_moveit_clients.igus_moveit import ARMClient
 def init_nodes():
     # igus robot
     robot = ARMClient()
-    robot.home_position = [-3.14, 0.0, 1.57, 0.0, -0.87, 0.0]
+    robot.home_position = [-3.14, 0.0, 1.57, 0.0, -0.87, 0.0] # [joint1, joint2, joint3, joint4, joint5, joint6]
     robot.setVelocity(0.5)
     robot.home()
     robot.clear_octomap()
 
     # sew agv
     agv = AGVClient()
+    agv.home_position = [[0.0,0.0,0.0], [0.0,0.0,0.0,1.0]]  # [position, orientation]
+    agv.home()
 
     # storage
     storage = StorageClient()
@@ -91,18 +93,18 @@ def move_arm_to_target(storage, robot, target_name):
 
     # get transform target pose to robot base frame
     robot_affine_tf = storage.get_transform(target_name, 'igus_base_link', affine=True)
-    #print('Robot_tf_to Target:', robot_affine_tf)
-    #storage.publish_affine_tf('igus_base_link', 'robot_target_before_turn', robot_affine_tf)
 
     # turn target tf 180deg round the z axis, to align gripper with target pose
     turn_180 = Affine((0.0,0.0,0.0),(0.0,0.0,1.0,0.0))
     robot_affine_tf = robot_affine_tf * turn_180
 
-    print('Robot_tf_to execute:', robot_affine_tf)
+    #print('Robot_tf_to execute:', robot_affine_tf)
     storage.publish_affine_tf('igus_base_link', 'robot_target_after_turn', robot_affine_tf)
 
+    # move robot to target
     sucess = robot.ptp(robot_affine_tf)
-    print('Success Robot Motion:', sucess)
+    #print('Success Robot Motion:', sucess)
+
     return sucess
 
 
@@ -120,7 +122,7 @@ def main():
     robot, agv, storage = init_nodes()
     time.sleep(5)
 
-    # target pose (currently hardcoded, maybe in future as user input
+    # target pose (currently hardcoded, maybe in future as user input ----------------------> TODO)
     target = 'shelf_test'
     # navigate to park pose
     sucess = navigate_to_park_pose(storage, agv, target)
@@ -133,6 +135,13 @@ def main():
         while not robot_sucess and counter < 3:
             counter += 1 
             robot_sucess = move_arm_to_target(storage, robot, target)
+        print(f'Desired Target- TF can be reached without local enviroment collisions: {robot_sucess}')
+    else:
+        print('Navigation to park pose failed, because the desired Target- TF is out of the robots workapace')
+
+    # if robot sucess, navigate to home pose
+    robot.home()
+    agv.home()
 
 
     # destroy all nodes stop execution

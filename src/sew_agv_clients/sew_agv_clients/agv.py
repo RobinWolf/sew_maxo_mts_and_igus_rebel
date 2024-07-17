@@ -21,7 +21,28 @@ class AGVClient(Node):
             self.get_logger().info("compute_path_to_pose_client action not available, waiting some more ...")
         self.get_logger().info("compute_path_to_pose_client action available")
 
+        self.home_position = [[0.0,0.0,0.0], [0.0,0.0,0.0,1.0]]  # [position, orientation]
 
+    def home(self):
+        """
+        Returns
+        -------
+        int status (no further response message provided)
+        """
+        home_msg = NavigateToPose.Goal()
+        home_msg.pose.header.frame_id = 'map'
+        home_msg.pose.pose.position.x = self.home_position[0][0]
+        home_msg.pose.pose.position.y = self.home_position[0][1]
+        home_msg.pose.pose.position.z = self.home_position[0][2]
+        home_msg.pose.pose.orientation.x = self.home_position[1][0]
+        home_msg.pose.pose.orientation.y = self.home_position[1][1]
+        home_msg.pose.pose.orientation.z = self.home_position[1][2]
+        home_msg.pose.pose.orientation.w = self.home_position[1][3]
+
+        status = self.move_to_nav_goal(home_msg)
+
+        return status
+    
     def move_to_nav_goal(self, goal_msg):
         """
         nav2_msgs/action/NavigateToPose.action.goal: goal pose 
