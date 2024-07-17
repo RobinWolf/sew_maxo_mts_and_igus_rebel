@@ -16,7 +16,6 @@ from igus_moveit_clients.transform import Affine
 from sew_agv_clients.agv import AGVClient
 
 
-
 class StorageClient(Node):
     def __init__(self):
         super().__init__('storage_client_node')
@@ -36,6 +35,32 @@ class StorageClient(Node):
 
         self.get_logger().info('storage handling node initialized')
 
+    def publish_affine_tf(self, parent_frame, child_frame, affine):
+        """
+        string parent_frame: name of the parent frame
+        string child_frame: name of the child frame
+        Affine() affine: Affine transformation of the tf to publish
+
+        Returns:
+        --------
+        None
+        """
+        # load target data from yaml file
+        tf = TransformStamped()
+        tf.header.frame_id = parent_frame
+        tf.child_frame_id = child_frame
+        tf.header.stamp =  self.get_clock().now().to_msg()
+        tf.transform.translation.x = affine.translation[0]
+        tf.transform.translation.y = affine.translation[1]
+        tf.transform.translation.z = affine.translation[2]
+        tf.transform.rotation.x = affine.quat[0]
+        tf.transform.rotation.y = affine.quat[1]
+        tf.transform.rotation.z = affine.quat[2]
+        tf.transform.rotation.w = affine.quat[3]
+
+        # publish tf
+        self.tf_static_broadcaster.sendTransform(tf)
+        self.get_logger().info(f'published tf for {child_frame}')
 
     def publish_target_tf(self, target_name):
         """
