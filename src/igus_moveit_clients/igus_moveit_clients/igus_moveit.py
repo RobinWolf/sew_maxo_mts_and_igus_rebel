@@ -109,6 +109,14 @@ class ARMClient(Node):
     
 
     def reset_planning_group(self, planning_group) -> bool:
+        """
+        string planning_group: name of the planning group of the arm (default: igus_6dof)
+
+        Returns
+        -------
+        bool success
+
+        """
         req = String.Request()
         req.data = planning_group
         future = ARMClient.send_service_request(req, self.reset_planning_group_cli)
@@ -116,42 +124,94 @@ class ARMClient(Node):
         return response.success
 
     def setVelocity(self, fraction) -> bool:
+        """
+        float: velocity caling coeffinet relative to joint speed limits (0.01 ... 0.5 recommendet)
+
+        Returns
+        -------
+        bool success
+
+        """
         req = SetVelocity.Request()
         req.velocity_scaling = fraction
         future = ARMClient.send_service_request(req, self.set_velocity_cli)
         response = self.wait_for_service_response(future)
+        if not response.sucess:
+            self.get_logger().error('Could not set velocity scaling')
         return response.success
     
     def home(self) -> bool:
+        """
+
+        Returns
+        -------
+        bool success
+
+        """
         return self.ptp_joint(self.home_position)
 
     # planning in cartesian space, plans around obstacles and octomap
     def ptp(self, pose: Affine) -> bool:
+        """
+        cartesian goal pose: affine transformation matrix format (can be converted from x,y,z, r,p,y or x,y,z and quaternion)
+
+        Returns
+        -------
+        bool success
+
+        """
         req = MoveToPose.Request()
         req.pose = affine_to_pose(pose)
         future = ARMClient.send_service_request(req, self.move_ptp_cli)
         response = self.wait_for_service_response(future)
+        if not response.sucess:
+            self.get_logger().error('Could not move to cartesian position due to detected collisions in ptp path or position is out of the workspace')
         return response.success
 
     # plan in joint_space, move to joint positions directly, but dont plan around obstacles
     def ptp_joint(self, joint_positions: List[float]) -> bool:
+        """
+        joint space goal pose: list of goal joint states (rad)
+
+        Returns
+        -------
+        bool success
+
+        """
         req = MoveToJointPosition.Request()
         req.joint_position = joint_positions
         future = ARMClient.send_service_request(req, self.move_joint_cli)
         response = self.wait_for_service_response(future)
+        if not response.sucess:
+            self.get_logger().error('Could not move to joint position due to detected collisions')
         return response.success
 
     # plan trajectory along cartesian lin path, but dont plan around obstacles
     def lin(self, pose: Affine) -> bool:
+        """
+        cartesian goal pose: affine transformation matrix format (can be converted from x,y,z, r,p,y or x,y,z and quaternion)
+
+        Returns
+        -------
+        bool success
+
+        """
         req = MoveToPose.Request()
         req.pose = affine_to_pose(pose)
         future = ARMClient.send_service_request(req, self.move_lin_cli)
         response = self.wait_for_service_response(future)
+        if not response.sucess:
+            self.get_logger().error('Could not move to cartesian position due to detected collisions in linear path or position is out of the workspace')
         return response.success
 
 
     # clear octomap in planning scene, only use current pointcloud for detecting collision geometry in the planning scene
     def clear_octomap(self) -> None:
+        """
+        Returns
+        -------
+        None
+        """
         req = Empty.Request()
         future = ARMClient.send_service_request(req, self.clear_octomap_cli)
         self.wait_for_service_response(future)
@@ -159,9 +219,6 @@ class ARMClient(Node):
 
 
 
-
-
-    # service calls for switching planner algorithm from ompl --> needs to be finetuned ! --> maybe introduce stomp as learning algorithm ???
 
 
     ##########################################################################################################################################################
