@@ -97,6 +97,10 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 
 ***AGV-Control:***
 ```python
+# class variables
+self.home_position = [[0.0,0.0,0.0], [0.0,0.0,0.0,1.0]]     # [position, quaternion]
+
+# class methods
 def check_nav_goal(self, frameID, pose): 
     """
     string frameID: frame where the pose is given in e.g. 'map'
@@ -120,18 +124,22 @@ def move_to_nav_goal(self, frameID, pose):
 ```
 ***Robot-Arm-Control:***
 ```python
-def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
-        """
-        string from_frame_rel: name of the source frame frame to transform from (child)
-        string to_frame_rel: name of the target frame to transform into (parent)
+# class variables
+self.home_position = [0.0,0.0,0.0,0.0,0.0,0.0]  # [joint1, joint2, joint3, joint4, joint5, joint6]
 
-        Returns:
-        --------
-        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
-        or
-        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
-        
-        """
+# class methods
+def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
+    """
+    string from_frame_rel: name of the source frame frame to transform from (child)
+    string to_frame_rel: name of the target frame to transform into (parent)
+
+    Returns:
+    --------
+    Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+    or
+    geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+    
+    """
 def reset_planning_group(self, planning_group):
     """
     string planning_group: name of the planning group of the arm (default: igus_6dof)
@@ -160,7 +168,7 @@ def home(self):
     """
 def ptp(self, pose: Affine):
     """
-    cartesian goal pose: affine transformation martix format (can be converted from x,y,z, r,p,y od x,y,z and quaternion)
+    cartesian goal pose: affine transformation martix format (can be converted from x,y,z, r,p,y or x,y,z and quaternion)
 
     Returns
     -------
@@ -178,7 +186,7 @@ def ptp_joint(self, joint_positions: List[float]):
     """
 def lin(self, pose: Affine):
     """
-    cartesian goal pose: affine transformation matrix format (can be converted from x,y,z, r,p,y od x,y,z and quaternion)
+    cartesian goal pose: affine transformation matrix format (can be converted from x,y,z, r,p,y or x,y,z and quaternion)
 
     Returns
     -------
@@ -194,18 +202,24 @@ def clear_octomap(self):
 ```
 ***Storage-Handling:***
 ```python
-def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
-        """
-        string from_frame_rel: name of the source frame frame to transform from (child)
-        string to_frame_rel: name of the target frame to transform into (parent)
+# class variables
+self.armRange = 0.66    # maximum range of the robots workspace (radius)
+self.agvOffsetX = 0.55     # offset between the first detected position not in collision with the enviroment and the park position in X-direction
+self.agvOffsetY = -0.19     # offset between the first detected position not in collision with the enviroment and the park position in Y-direction
+self.stepSize = 0.1     # step size in X-direction of the search algorithm searching positions not in collision with the enviroment
+self.joint1Heigth = 0.86    # heigth of the robots joint 1 axis above the ground
 
-        Returns:
-        --------
-        Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
-        or
-        geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+# class methods
+def publish_affine_tf(self, parent_frame, child_frame, affine):
+    """
+    string parent_frame: name of the parent frame
+    string child_frame: name of the child frame
+    Affine() affine: Affine transformation of the tf to publish
 
-        """
+    Returns:
+    --------
+    None
+    """
 
 def publish_target_tf(self, target_name):
     """
@@ -214,8 +228,26 @@ def publish_target_tf(self, target_name):
     Returns:
     --------
     None
-    
     """
+
+def get_approach_name(self, target_name):
+    """
+    string target_name: name of the target to reach
+
+    Returns:
+    --------
+    string approach_name: name of the approach pose for the given target
+    """
+
+def publish_approach_tf(self, target_name):
+    """
+    string target_name: name of the target to publish its tf
+
+    Returns:
+    --------
+    None
+    """
+
 def clear_tf(self, tf_name):
     """
     string tf_name: name of the target tf to clear
@@ -225,6 +257,19 @@ def clear_tf(self, tf_name):
     None
 
     """
+def get_transform(self, from_frame_rel, to_frame_rel, affine=True):
+    """
+    string from_frame_rel: name of the source frame frame to transform from (child)
+    string to_frame_rel: name of the target frame to transform into (parent)
+
+    Returns:
+    --------
+    Affine: transformation matrix from robot base to target position and orientation (4x4 numpy array, can directly passed in motion planning)
+    or
+    geometry_msgs/TransformStamped: transformation between the two frames if affine=False
+
+    """
+
 def get_park_poseCmd(self, target_name, numTestpoints, armRange, offset, visualize):
     """
     string target_name: name of the target to reach
