@@ -28,8 +28,8 @@ class StorageClient(Node):
 
         # class variables, can be modified for other hardware setups, this are defaults for sew maxo mts and igus rebel (SS24)
         self.armRange = 0.66
-        self.agvOffset = 0.55
-        self.robotOffset = -0.19
+        self.agvOffsetX = 0.55
+        self.agvOffsetY = -0.19
         self.stepSize = 0.1
         self.joint1Heigth = 0.86
 
@@ -185,8 +185,8 @@ class StorageClient(Node):
             goal_msg = self.tf_to_navCmd(test_tf)
             reachable = self.collisionChecker.check_nav_goal(goal_msg)
             if reachable:
-                test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffset
-                test_tf.transform.translation.y = test_tf.transform.translation.y + self.robotOffset
+                test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffsetX
+                test_tf.transform.translation.y = test_tf.transform.translation.y + self.agvOffsetY
                 test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
                 park_tf = test_tf_to_map                                                
                 self.get_logger().info(f'Test point {testCycle} is not in collision ...')
