@@ -79,7 +79,7 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 4) now you shuld be able to navigate the AGV in RVIZ by publishing a new goal pose by first clicking the corresponding button in the top task bar and second the desired goal on the map.  
    <img src="img/rviz_navigation_ongoing.png" alt="drawing" width="300"/>
 5) Motion Planning with the arm sohuld be possible too. Just modify the joint states in the bottom left window and click the "plan and execute" button.
-6) COSTMAP: TODO
+6) you can clear the current occupancy map for motion planning by clicking the button "clear octomap" in the bottom left window
 
 
 #### Run a supervised Control Script
