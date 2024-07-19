@@ -204,7 +204,8 @@ def clear_octomap(self):
 ```python
 # class variables
 self.armRange = 0.66    # maximum range of the robots workspace (radius)
-self.agvOffsetX = 0.55     # offset between the first detected position not in collision with the enviroment and the park position in X-direction
+self.agvOffsetX = 0.4     # offset between the first detected position not in collision with the enviroment and the park position in X-direction (half of agv length)
+self.parkClearanceX = 0.15      # offset between the first detected position not in collision with the enviroment and the park position in X-direction (clearance between agv backside and collision enviroment)
 self.agvOffsetY = -0.19     # offset between the first detected position not in collision with the enviroment and the park position in Y-direction
 self.stepSize = 0.1     # step size in X-direction of the search algorithm searching positions not in collision with the enviroment
 self.joint1Heigth = 0.86    # heigth of the robots joint 1 axis above the ground

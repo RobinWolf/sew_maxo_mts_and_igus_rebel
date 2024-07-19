@@ -54,7 +54,6 @@ def navigate_to_park_pose(storage, agv, target_name):
 
 def delete_published_tfs(storage, target_name):
     # delete published tfs
-    time.sleep(20)
     storage.clear_tf(target_name)
     storage.clear_tf(storage.get_approach_name(target_name))
     storage.clear_tf('park_' + target_name)
@@ -124,6 +123,7 @@ def main():
 
     # target pose (currently hardcoded, maybe in future as user input ----------------------> TODO)
     target = 'shelf_test'
+    #target = 'desk_test'
     # navigate to park pose
     sucess = navigate_to_park_pose(storage, agv, target)
 
@@ -135,11 +135,10 @@ def main():
         while not robot_sucess and counter < 3:
             counter += 1 
             robot_sucess = move_arm_to_target(storage, robot, target)
-        print(f'Desired Target- TF can be reached without local enviroment collisions: {robot_sucess}')
-    else:
-        print('Navigation to park pose failed, because the desired Target- TF is out of the robots workapace')
 
-    # if robot sucess, navigate to home pose
+
+    # navigate to home pose
+    robot.clear_octomap()
     robot.home()
     agv.home()
 

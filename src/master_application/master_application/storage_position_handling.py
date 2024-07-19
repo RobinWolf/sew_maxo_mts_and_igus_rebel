@@ -28,8 +28,9 @@ class StorageClient(Node):
 
         # class variables, can be modified for other hardware setups, this are defaults for sew maxo mts and igus rebel (SS24)
         self.armRange = 0.66
-        self.agvOffsetX = 0.55
+        self.agvOffsetX = 0.4
         self.agvOffsetY = -0.19
+        self.parkClearanceX = 0.15
         self.stepSize = 0.1
         self.joint1Heigth = 0.86
 
@@ -161,14 +162,12 @@ class StorageClient(Node):
         """
         # get geometrymsgs/TransformStamped between map and target position from (child), to (parent)
         target_tf = self.get_transform(target_name, 'map', affine=False)
-        #print (target_tf)
         
         # set valid search space for park position in relation to the height of the target position
-        searchRange = math.sqrt(self.armRange**2 - (target_tf.transform.translation.z-self.joint1Heigth)**2)
-        # print("### searchRange ### : ", searchRange)
+        searchRange = math.sqrt((self.armRange-self.parkClearanceX)**2 - (target_tf.transform.translation.z-self.joint1Heigth)**2)
+
         # Calculate the step size for test points
         numTestpoints = int(searchRange // self.stepSize) 
-        print(numTestpoints)
         # interpolate line from target position along local x-axis to find park position
         for testCycle in range (numTestpoints):
             #calculate new test point on x axis (on the ground - z = 0) --> child of target_tf
@@ -185,7 +184,7 @@ class StorageClient(Node):
             goal_msg = self.tf_to_navCmd(test_tf)
             reachable = self.collisionChecker.check_nav_goal(goal_msg)
             if reachable:
-                test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffsetX
+                test_tf.transform.translation.x = test_tf.transform.translation.x + self.agvOffsetX + self.parkClearanceX
                 test_tf.transform.translation.y = test_tf.transform.translation.y + self.agvOffsetY
                 test_tf_to_map = self.get_transform(test_tf.child_frame_id, 'map', affine=False)
                 park_tf = test_tf_to_map                                                
