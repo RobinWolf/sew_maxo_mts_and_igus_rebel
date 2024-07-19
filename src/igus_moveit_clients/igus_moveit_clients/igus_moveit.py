@@ -136,7 +136,7 @@ class ARMClient(Node):
         req.velocity_scaling = fraction
         future = ARMClient.send_service_request(req, self.set_velocity_cli)
         response = self.wait_for_service_response(future)
-        if not response.sucess:
+        if not response.success:
             self.get_logger().error('Could not set velocity scaling')
         return response.success
     
@@ -164,7 +164,7 @@ class ARMClient(Node):
         req.pose = affine_to_pose(pose)
         future = ARMClient.send_service_request(req, self.move_ptp_cli)
         response = self.wait_for_service_response(future)
-        if not response.sucess:
+        if not response.success:
             self.get_logger().error('Could not move to cartesian position due to detected collisions in ptp path or position is out of the workspace')
         return response.success
 
@@ -182,7 +182,7 @@ class ARMClient(Node):
         req.joint_position = joint_positions
         future = ARMClient.send_service_request(req, self.move_joint_cli)
         response = self.wait_for_service_response(future)
-        if not response.sucess:
+        if not response.success:
             self.get_logger().error('Could not move to joint position due to detected collisions')
         return response.success
 
@@ -200,7 +200,7 @@ class ARMClient(Node):
         req.pose = affine_to_pose(pose)
         future = ARMClient.send_service_request(req, self.move_lin_cli)
         response = self.wait_for_service_response(future)
-        if not response.sucess:
+        if not response.success:
             self.get_logger().error('Could not move to cartesian position due to detected collisions in linear path or position is out of the workspace')
         return response.success
 
