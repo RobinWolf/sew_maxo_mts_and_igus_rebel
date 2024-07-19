@@ -20,21 +20,21 @@ To use the providede Dockerfile the following prequisities are required on your 
 #### Description Packages
 The description packages provide the full kinematic definition and CAD data of our robot system. In ROS2 the kinematics of the robot is defined in a URDF model. The URDF model can be structred by using the xacro package and define sub-macros which are all put together in the main URDF.  
 Moreover some tags regarding the hardware-communication with ROS2-Control and some tags regarding the Gazebo simulation to simulate sensors like lidar and depth camera are specified in these packages too.
-- irc_ros_description: kinematic description of the Igus ReBel Arm (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_description) 
+- irc_ros_description: kinematic description and ros2 control definitions of the Igus ReBel Arm (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_description) 
 - sew_agv_description: kinematic description of the sew-maxo-mts AGV at Hochschule Karlsruhe
-- sew_and_igus_description: combine kinematic description of the arm and the AGV to one united robot with more DoF.
+- sew_and_igus_description: combined kinematic description of the arm and the AGV to one united robot with more DoF.
 
 #### AGV related Packages
 These packages provide further functionalities used only to control the sew-maxo-mts AGV.
 
-- sew_agv_drivers: provides the controller definitions to control the hardware (motors) of the SEW AGV in simulation and reality. For real hardware a custom hardware interface which connects to the hardware via sew-link interface is implemented. (more informations in the whole doku) 
+- sew_agv_drivers: provides the controller definitions to control the hardware (motors) of the SEW AGV in reality. For real hardware a custom hardware interface which connects to the hardware via sew-link interface is implemented. --> currently not in use because only simulation is available
 - sew_agv_navigation: handles connection to a xBox One controller which can be used to drive the AGV manually and provides all necessary nodes of the to navigate the AGV autonomously in a recorded map with the use of ROS2 Nav2 Stack. Functionalities for 2D SLAM-Mapping are included too.
 - sew_agv_clients: provides a python class which wrapps the interaction with the simple commander interface of Nav2 in a even simpler approach to provide for the user.
   
 #### Igus ReBel related Packages
 These packages provide further dunctionalities used by the robot arm for motion planning and hardware communication.
 
-- igus_drivers ??? ---> TODO
+- igus_drivers: provides the controller definitions to control the hardware (motors) of the Igus ReBel 6DoF in reality (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_controllers). --> currently not in use because only simulation is available
 - sew_and_igus_moveit_config: configuration of the motion planning capabilities with MoveIt2 embedded in ROS2 and handling of the needed nodes to plan and execute trajectories. The handling of the occupancy-map collision gemetries extracted from the cmaera point-cloud is also done here.
 - moveit_wrapper: provides service servers which can control the motion planning capabilities through the C++ move_group interface
 - igus_moveit_clients: provides a python class handling clients which connect to the servers from the warpper package. The user can call the class methods from a supervised python file to provide a simple approach of using MoveIt motion planning capabilities.
@@ -49,7 +49,7 @@ offers the capabilitie of using the robot system and testing the software withou
 Users can use the complete software architecture by these two packages. Its not necessary to understand all processes behind the provided user programming interface, but highly recommendet.
 
 - complete_bringup: this package handles the correct bringup of all needed ROS2 nodes and has to be launched by the user to start the system (see How To)
-- master:application: this package provides a simple programmable interface for the ROS2 ecosystem. The user can implement his own supervised control logic in python conde to move the robot system in simulation and real world by calling the metods provided in the clinet classes (see How To)
+- master_application: this package provides a simple programmable interface for the ROS2 ecosystem. The user can implement his own supervised control logic in python conde to move the robot system in simulation and real world by calling the metods provided in the clinet classes (see How To)
 
 ## Brief Introduction in the Software Architecture and Node Communication
 The following graphics should provide a brief overview about the ROS2 ecosyetem inside this repo and how the described packages interact with each other.  
