@@ -236,7 +236,13 @@ def generate_launch_description():
 
     #launch whole rviz node with stored config and motion planning parameters
     rviz_config_file = PathJoinSubstitution([FindPackageShare(bringup_package), "rviz", "moveit_and_nav2.rviz"]) # define path to rviz-config file
-
+    robot_description_kinematics_file = PathJoinSubstitution(   # needed for the interactive markers in rviz
+        [
+            FindPackageShare(igus_moveit_package),
+            "config",
+            "kinematics.yaml",
+        ]
+    )
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -245,6 +251,7 @@ def generate_launch_description():
         arguments=["-d", rviz_config_file],
         parameters=[
             {'use_sim_time': use_sim_time},
+            robot_description_kinematics_file,
         ],
         condition=IfCondition(launch_complete_rviz)
     )

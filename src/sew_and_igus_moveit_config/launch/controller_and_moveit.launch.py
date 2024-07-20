@@ -4,6 +4,7 @@
 # https://github.com/peterdavidfagan/moveit2_tutorials/blob/moveit_py_motion_planning_python_api_tutorial/doc/examples/motion_planning_python_api/launch/motion_planning_python_api_tutorial.launch.py
 
 import os
+import yaml
 from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
@@ -26,6 +27,16 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import ReplaceString
 
+def load_yaml_internal(package_name, file_path):
+    # TODO make it work with parameter specified package name
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path) as file:
+            return yaml.safe_load(file)
+    except OSError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 def opaque_test(context, *args, **kwargs):
     tf_prefix = LaunchConfiguration("tf_prefix")
@@ -146,14 +157,14 @@ def opaque_test(context, *args, **kwargs):
     )
     controllers_dict = load_yaml(Path(controllers.perform(context)))
 
-    ompl_file = PathJoinSubstitution(
-        [
-            FindPackageShare(moveit_package),
-            "config",
-            "ompl.yaml",
-        ]
-    )
-    ompl = {"ompl": load_yaml(Path(ompl_file.perform(context)))}
+    # ompl_file = PathJoinSubstitution(
+    #     [
+    #         FindPackageShare(moveit_package),
+    #         "config",
+    #         "ompl.yaml",
+    #     ]
+    # )
+    # ompl = {"ompl": load_yaml(Path(ompl_file.perform(context)))}
 
     moveit_controllers = {
         "moveit_simple_controller_manager": controllers_dict,
@@ -175,6 +186,9 @@ def opaque_test(context, *args, **kwargs):
             "start_state_max_bounds_error": 0.1,
         },
     }
+
+    ompl_planning_yaml = load_yaml_internal(moveit_package, "config/ompl.yaml")
+    planning_pipeline["move_group"].update(ompl_planning_yaml)
 
     planning_scene_monitor_parameters = {
         "publish_planning_scene": True,
@@ -211,7 +225,7 @@ def opaque_test(context, *args, **kwargs):
             "publish_state_updates": True,
             "publish_transforms_updates": True,
         },
-        ompl,
+        planning_pipeline,
         octomap_config,
         octomap_updater_config
     ]
@@ -280,7 +294,7 @@ def opaque_test(context, *args, **kwargs):
         parameters=[
             {"robot_description": robot_description},
             {'use_sim_time': use_sim_time},
-            moveit_args,
+            planning_pipeline,
             robot_description_kinematics_file,
         ],
         condition=IfCondition(launch_rviz),
