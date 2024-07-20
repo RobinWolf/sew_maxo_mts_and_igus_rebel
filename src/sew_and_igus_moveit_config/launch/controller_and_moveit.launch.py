@@ -167,13 +167,6 @@ def opaque_test(context, *args, **kwargs):
             "kinematics.yaml",
         ]
     )
-    # robot_description_kinematics = ReplaceString(
-    #     source_file=robot_description_kinematics_file,
-    #     replacements={
-    #         "<namespace>": namespace,
-    #         "<prefix>": prefix,
-    #     },
-    # )
 
     planning_pipeline = {
         "move_group": {
@@ -207,7 +200,6 @@ def opaque_test(context, *args, **kwargs):
     moveit_args_not_concatenated = [
         {"robot_description": robot_description.perform(context)},
         {"robot_description_semantic": robot_description_semantic.perform(context)},
-        #load_yaml(Path(robot_description_kinematics.perform(context))),
         load_yaml(Path(joint_limits.perform(context))),
         moveit_controllers,
         planning_scene_monitor_parameters,
