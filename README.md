@@ -74,7 +74,7 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 2) optional: connect the xBox One controller to your host PC via USB  
    <img src="img/gazebo_enviroment.png" alt="drawing" width="300"/>
    <img src="img/rviz_before_initial_pos.png" alt="drawing" width="300"/>
-3) set the initial pose of he AGV in the world by clicking the "set initial pose" button in the top task-bar in RVIZ first and click to the current AGV pose (direction can be set with sliding while clicking). A green arrow should appear.  
+3) set the initial pose of he AGV in the world by clicking the "set initial pose" button in the top task-bar in RVIZ first and click to the current AGV pose (direction can be set with sliding while clicking). A green arrow should appear.  Note: in the current implementation this is done automatically on startup, but if the localization fails, you can redo it as often as you want.
    <img src="img/rviz_set_initial_pos.png" alt="drawing" width="300"/>
 4) now you shuld be able to navigate the AGV in RVIZ by publishing a new goal pose by first clicking the corresponding button in the top task bar and second the desired goal on the map.  
    <img src="img/rviz_navigation_ongoing.png" alt="drawing" width="300"/>
