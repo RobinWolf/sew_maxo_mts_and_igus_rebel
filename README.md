@@ -81,7 +81,9 @@ Hint: Gazebo may output a "not responding" error at the first launch. Thats comm
 5) Motion Planning with the arm sohuld be possible too. Just modify the joint states in the bottom left window and click the "plan and execute" button.
 6) you can clear the current occupancy map for motion planning by clicking the button "clear octomap" in the bottom left window
 
-
+**Note:**  
+If you want to record a new map, please launch ```ros2 launch sew_agv_navigation mapping.launch.py```
+and save the map with: ```ros2 run nav2_map_server `map_saver_cli -f ~/ros2_ws/src/sew_agv_navigation/config/navigation/maps/<name>```
 #### Run a supervised Control Script
 1)  connect a new, second terminal to the running container with: ```docker exec -it sew_mobile_manipulator bash``` and source insite the new terminal (like step 5)
 2)  execute your supervised control script: ```ros2 run master_application <your_control_script>```
@@ -281,15 +283,3 @@ def get_park_poseCmd(self, target_name, numTestpoints, armRange, offset, visuali
 
     """
 ```
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-## notes/ links for navigation - doku:
-- localization concept graphics: http://wiki.ros.org/amcl
-- nav2 code: https://github.com/ros-navigation/navigation2
-- amcl configuration guide: https://docs.nav2.org/configuration/packages/configuring-amcl.html
-- lifecycle managed nodes: https://design.ros2.org/articles/node_lifecycle.html
-
-save a map: ros2 run nav2_map_server `map_saver_cli -f ~/ros2_ws/src/sew_agv_navigation/config/navigation/maps/<name>`
