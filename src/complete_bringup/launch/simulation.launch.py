@@ -72,9 +72,9 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "hardware_protocol",
-            default_value='gazebo',
-            description="select the hardware protocol which should be used by ros2 control resource manager",
+            'use_controller',
+            default_value='true',
+            description='Set to "true" if you want to use a xBox One Controller to control the AGV movement, set to "false" if you want to use "wasd" on the keyboard instead.',
         )
     )
     declared_arguments.append(
@@ -129,9 +129,9 @@ def generate_launch_description():
     ros2_control_with_gazebo = LaunchConfiguration("ros2_control_with_gazebo")
     robot_ip = LaunchConfiguration('robot_ip') 
     use_sim_time = LaunchConfiguration('use_sim_time')   
-    enable_joystick = LaunchConfiguration('enable_joystick') 
+    enable_joystick = LaunchConfiguration('enable_joystick')
+    use_controller = LaunchConfiguration('use_controller') 
     prefix = LaunchConfiguration('prefix') 
-    hardware_protocol = LaunchConfiguration('hardware_protocol') 
     launch_complete_rviz = LaunchConfiguration('launch_complete_rviz')
     launch_seperate_rviz = LaunchConfiguration('launch_seperate_rviz') 
     launch_mapping = LaunchConfiguration('launch_mapping')
@@ -162,6 +162,7 @@ def generate_launch_description():
             condition=IfCondition(enable_joystick),
             launch_arguments={
                 "use_sim_time": use_sim_time,
+                "use_controller": use_controller,
                 "standalone_gazebo": standalone_gazebo,
                 "generate_ros2_control_tag": generate_ros2_control_tag,
             }.items(),
