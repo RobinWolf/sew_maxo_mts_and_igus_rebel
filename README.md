@@ -1,10 +1,10 @@
 # Full Gazebo Simulation for the SEW-AGV with mounted Igus ReBel Robot Arm
 
 ## Repo Structure and ROS Packages
-This is a core breakdown of the official documentation to the FE-Project of Hannes Bornamann, Mathias Fuhrer and Robin Wolf at the Hochschule Karlsruhe (SS24). This readme should guide usere to get familiar with the simulation enviroment and its capabilities. Deeper informations and background knowledge is provided in the offical documentation only.
+This is a core breakdown of the official documentation to the FE-Project of Hannes Bornamann, Mathias Fuhrer and Robin Wolf at the Hochschule Karlsruhe (SS24). This readme should guide users to get familiar with the simulation enviroment and its capabilities. Deeper informations and background knowledge is provided in the offical documentation only.
 
 ### Usage of containerized enviroments with Docker:
-The usage of Docker is a common Praxis when working with ROS2. The biggest advantage of devbeloping a ROS ecosystem inside a containerized enviroment is  that it can be used independent of the host hardware.  
+The usage of Docker is a common Praxis when working with ROS2. The biggest advantage of developing a ROS ecosystem inside a containerized enviroment is  that it can be used independent of the host hardware.  
 Everyone who wants to use this repo has just to clone the repo from GitHub to the local disk and run the Dockerfile.
 No ROS2 installation on the host machine  necessary !  
 All needed ROS2-Packages are installed and set up by default when running the Dockerfile. Moreover the network setup for the ROS2 Node communication over topics with fast-RTPS defined in the dds_profile.xml is done automatically.
@@ -34,10 +34,11 @@ These packages provide further functionalities used only to control the sew-maxo
 #### Igus ReBel related Packages
 These packages provide further dunctionalities used by the robot arm for motion planning and hardware communication.
 
-- igus_drivers: provides the controller definitions to control the hardware (motors) of the Igus ReBel 6DoF in reality (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_controllers). --> currently not in use because only simulation is available
+- igus_drivers: provides the controller definitions to control the hardware (motors) of the Igus ReBel 6DoF in reality (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_bringup). --> currently not in use because only simulation is available inside this container
 - sew_and_igus_moveit_config: configuration of the motion planning capabilities with MoveIt2 embedded in ROS2 and handling of the needed nodes to plan and execute trajectories. The handling of the occupancy-map collision gemetries extracted from the cmaera point-cloud is also done here.
 - moveit_wrapper: provides service servers which can control the motion planning capabilities through the C++ move_group interface
 - igus_moveit_clients: provides a python class handling clients which connect to the servers from the warpper package. The user can call the class methods from a supervised python file to provide a simple approach of using MoveIt motion planning capabilities.
+- trac-ik: contains the sourcecode and plugin definition for an advanced IK-solver which is used by MoveIt in our configuration (cloned from https://bitbucket.org/traclabs/trac_ik/src/rolling-devel/)
   
 #### Simulation Packages
 This package handles the Gazebo physics simulation and their interface/ bridge to the related ROS2 topics. The simulation 
