@@ -69,9 +69,9 @@ In this section we want to guide a new, unexperiences user to use our repo and d
 5) source and install the built Packages: ```source install/setup.bash```
 
 #### Launch all Nodes (Bringup)
-1) launch required nodes by calling the launch file from the complete_bringup package ```ros2 launch complete_bringup simulation.launch.py``` or ```ros2 launch complete_bringup real.launch.py``` for real hardware (currently not supported 06/2024) - optional: set provided launch arguments if not to use the defaults
+1) launch required nodes by calling the launch file from the complete_bringup package ```ros2 launch complete_bringup simulation.launch.py``` or ```ros2 launch complete_bringup real.launch.py``` for real hardware (currently not supported 06/2024) - optional: set provided launch arguments if not to use the defaults (for example launch with keyboard control instead of xBox controller set ```use_controller:=false```)
 Hint: Gazebo may output a "not responding" error at the first launch. Thats common, please wait until gazebo is launched, kill the running terminal with ctrl+C and redo step 6. Now gazebo should load faster from cache.
-2) optional: connect the xBox One controller to your host PC via USB  
+2) connect the xBox One controller to your host PC via USB to move the AGV manually by the controller. If you like to move the AGV via keyboard, just click into the small new opened terminal and follow the instructions there.
    <img src="img/gazebo_enviroment.png" alt="drawing" width="300"/>
    <img src="img/rviz_before_initial_pos.png" alt="drawing" width="300"/>
 3) set the initial pose of he AGV in the world by clicking the "set initial pose" button in the top task-bar in RVIZ first and click to the current AGV pose (direction can be set with sliding while clicking). A green arrow should appear.  Note: in the current implementation this is done automatically on startup, but if the localization fails, you can redo it as often as you want.  

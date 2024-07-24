@@ -72,6 +72,16 @@ def generate_launch_description():
         condition=IfCondition(use_controller)
     )
 
+    keyboard_node = Node(
+        package='teleop_twist_keyboard',
+        executable='teleop_twist_keyboard',
+        name='teleop_twist_keyboard',
+        output='screen',
+        remappings=[('/cmd_vel', '/cmd_vel_joy')],
+        prefix='xterm -e',  # open a new terminal window where you can control the robot with the keyboard
+        condition=UnlessCondition(use_controller)
+    )
+
     twistmux_params = os.path.join(get_package_share_directory(navigation_package),'config', 'joystick', 'twistmux.yaml')
 
     twistmux_node = Node(
@@ -91,14 +101,6 @@ def generate_launch_description():
         condition=IfCondition(generate_ros2_control_tag)
     )
 
-    keyboard_node = Node(
-        package='teleop_twist_keyboard',
-        executable='teleop_twist_keyboard',
-        name='teleop_twist_keyboard',
-        output='screen',
-        condition=UnlessCondition(use_controller),
-        remappings=[('/cmd_vel', '/cmd_vel_joy')]
-    )
 
     nodes_to_start = [teleop_joy_node, joy_node, twistmux_node, twistmux_node_control, keyboard_node]
 

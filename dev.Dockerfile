@@ -48,6 +48,7 @@ RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-teleop-twist-joy \
     ros-${ROS_DISTRO}-gazebo-ros2-control
 
 RUN apt-get update && apt-get install -y joystick
+RUN apt-get update && apt-get install -y xterm
 USER $USER
 
 ##############################################################################
