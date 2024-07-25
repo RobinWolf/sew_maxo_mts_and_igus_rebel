@@ -6,7 +6,7 @@ from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
-from launch.conditions import IfCondition, UnlessCondition
+from launch.conditions import IfCondition
 
 
 def generate_launch_description():
@@ -32,8 +32,8 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "gernerate_ros2_control_tag",
-            default_value="false",
+            "generate_ros2_control_tag",
+            default_value="true",
             description="Generate the ros2_control tag in the urdf file, if false the tag has to be added manually to the urdf file.",
         )
     )
@@ -46,14 +46,14 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "robot_ip",
-            default_value="10.172.64.1",
+            "agv_ip",
+            default_value="192.168.10.22",
             description="The IP-Adress with which the agv hardware joins the common network",
         )
     )
     declared_arguments.append(
     DeclareLaunchArgument('use_sim_time',
-            default_value='true',
+            default_value='false',
             description='Set to "true" if you want to use the gazebo clock, set to "fasle" if you use real hardware.'
         )
     )
@@ -61,8 +61,8 @@ def generate_launch_description():
 
     tf_prefix = LaunchConfiguration("tf_prefix")
     use_fake_hardware = LaunchConfiguration("use_fake_hardware")
-    robot_ip = LaunchConfiguration("robot_ip")
-    gernerate_ros2_control_tag = LaunchConfiguration("gernerate_ros2_control_tag")
+    agv_ip = LaunchConfiguration("agv_ip")
+    generate_ros2_control_tag = LaunchConfiguration("generate_ros2_control_tag")
     ros2_control_with_gazebo = LaunchConfiguration("ros2_control_with_gazebo")
     use_sim_time = LaunchConfiguration('use_sim_time')   
 
@@ -78,14 +78,14 @@ def generate_launch_description():
             "tf_prefix:=",
             tf_prefix,
             " ",
-            "robot_ip:=",
-            robot_ip,
+            "agv_ip:=",
+            agv_ip,
             " ",
             "use_fake_hardware:=",
             use_fake_hardware,
              " ",
-            "gernerate_ros2_control_tag:=",
-            gernerate_ros2_control_tag,
+            "generate_ros2_control_tag:=",
+            generate_ros2_control_tag,
             " ",
             "ros2_control_with_gazebo:=",
             ros2_control_with_gazebo,
@@ -101,8 +101,7 @@ def generate_launch_description():
 
 
     #define the nodes to launch 
-    control_node = Node(    #the controller manager is only needed with real hardware, gazebo simulation has its own controller manager !
-        condition = UnlessCondition(use_sim_time),
+    control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[agv_description, agv_controllers, {'use_sim_time': use_sim_time}],

@@ -26,14 +26,13 @@ Moreover some tags regarding the hardware-communication with ROS2-Control and so
 ### AGV related Packages:
 These packages provide further functionalities used only to control the sew-maxo-mts AGV.
 
-- sew_agv_drivers: provides the controller definitions to control the hardware (motors) of the SEW AGV in reality. For real hardware a custom hardware interface which connects to the hardware via sew-link interface is implemented. --> currently not in use because only simulation is available inside this container. Please refer to the other provided containers.
+- sew_agv_drivers: provides the controller definitions to control the hardware (motors) of the SEW AGV in reality. For real hardware a custom hardware interface which connects to the hardware via sew-link interface is implemented. --> currently no support for real hardware because only simulation is available inside this container. Please refer to the other provided containers for real hardware without perception features.
 - sew_agv_navigation: handles connection to a xBox One controller or the PCs keyboaed which can be used to drive the AGV manually and provides all necessary nodes to navigate the AGV autonomously in a recorded map with the use of ROS2 Nav2 Stack. Functionalities for 2D SLAM-Mapping are included too.
 - sew_agv_clients: provides a python class which wrapps the interaction with the service and action servers of Nav2 in a even simpler approach to provide it for the user.
   
 ### Igus ReBel related Packages:
 These packages provide further functionalities used by the robot arm for motion planning and hardware communication.
 
-- igus_drivers: provides the controller definitions to control the hardware (motors) of the Igus ReBel 6DoF in reality (cloned from https://github.com/CommonplaceRobotics/iRC_ROS/tree/humble/irc_ros_bringup). --> currently not in use because only simulation is available inside this container. Please refer to the other provided containers.
 - sew_and_igus_moveit_config: configuration of the motion planning capabilities with MoveIt2 embedded in ROS2 and handling of the needed nodes to plan and execute trajectories. The handling of the occupancy-map collision geometries extracted from the camaera point-cloud is also done here.
 - moveit_wrapper: provides service servers which can control the motion planning capabilities through the C++ move_group interface
 - igus_moveit_clients: provides a python class handling clients which connect to the servers from the warpper package. The user can call the class methods from a supervised python file to provide a simple approach of using MoveIt motion planning capabilities.
