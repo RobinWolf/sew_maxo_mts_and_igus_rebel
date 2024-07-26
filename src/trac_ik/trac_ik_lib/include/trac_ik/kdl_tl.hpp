@@ -34,6 +34,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
+#include <rclcpp/clock.hpp>
 
 namespace TRAC_IK
 {
@@ -100,7 +101,8 @@ private:
     double f = (double)rand() / RAND_MAX;
     return min + f * (max - min);
   }
-
+  
+  rclcpp::Clock system_clock;
 
 };
 

@@ -37,7 +37,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thread>
 #include <mutex>
 #include <memory>
-#include <boost/date_time.hpp>
 
 namespace TRAC_IK
 {
@@ -47,9 +46,9 @@ enum SolveType { Speed, Distance, Manip1, Manip2 };
 class TRAC_IK
 {
 public:
-  TRAC_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime = 0.005, double _eps = 1e-5, SolveType _type = Speed);
+  TRAC_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime = 0.005, double _eps = 1e-5, SolveType _type = Speed);
 
-  TRAC_IK(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param = "/robot_description", double _maxtime = 0.005, double _eps = 1e-5, SolveType _type = Speed);
+  TRAC_IK(rclcpp::Node::SharedPtr nh, const std::string& base_link, const std::string& tip_link, const std::string& URDF_param = "robot_description", double _maxtime = 0.005, double _eps = 1e-5, SolveType _type = Speed);
 
   ~TRAC_IK();
 
@@ -83,7 +82,7 @@ public:
   {
     lb = lb_;
     ub = ub_;
-    nl_solver.reset(new NLOPT_IK::NLOPT_IK(chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
+    nl_solver.reset(new NLOPT_IK::NLOPT_IK(nh_, chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
     iksolver.reset(new KDL::ChainIkSolverPos_TL(chain, lb, ub, maxtime, eps, true, true));
     return true;
   }
@@ -107,6 +106,7 @@ public:
   }
 
 private:
+  rclcpp::Node::SharedPtr nh_;
   bool initialized;
   KDL::Chain chain;
   KDL::JntArray lb, ub;
@@ -118,7 +118,8 @@ private:
   std::unique_ptr<NLOPT_IK::NLOPT_IK> nl_solver;
   std::unique_ptr<KDL::ChainIkSolverPos_TL> iksolver;
 
-  boost::posix_time::ptime start_time;
+  rclcpp::Clock system_clock;
+  rclcpp::Time start_time;
 
   template<typename T1, typename T2>
   bool runSolver(T1& solver, T2& other_solver,

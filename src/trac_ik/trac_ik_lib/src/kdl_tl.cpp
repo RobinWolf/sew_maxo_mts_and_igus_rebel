@@ -29,9 +29,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************/
 
 #include <trac_ik/kdl_tl.hpp>
-#include <boost/date_time.hpp>
-#include <ros/ros.h>
-#include <limits>
+#include <rclcpp/rclcpp.hpp>
+#include <cfloat>
 
 namespace KDL
 {
@@ -71,8 +70,7 @@ int ChainIkSolverPos_TL::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame
   if (aborted)
     return -3;
 
-  boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::local_time();
-  boost::posix_time::time_duration timediff;
+  auto start_time = system_clock.now();
   q_out = q_init;
   bounds = _bounds;
 
@@ -162,7 +160,7 @@ int ChainIkSolverPos_TL::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame
 
     Subtract(q_out, q_curr, q_out);
 
-    if (q_out.data.isZero(boost::math::tools::epsilon<float>()))
+    if (q_out.data.isZero(FLT_EPSILON))
     {
       if (rr)
       {
@@ -185,8 +183,8 @@ int ChainIkSolverPos_TL::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame
 
     q_out = q_curr;
 
-    timediff = boost::posix_time::microsec_clock::local_time() - start_time;
-    time_left = maxtime - timediff.total_nanoseconds() / 1000000000.0;
+    auto timediff = system_clock.now() - start_time;
+    time_left = maxtime - timediff.seconds();
   }
   while (time_left > 0 && !aborted);
 

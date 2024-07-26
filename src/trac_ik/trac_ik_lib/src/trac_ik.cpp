@@ -30,9 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include <trac_ik/trac_ik.hpp>
-#include <boost/date_time.hpp>
 #include <Eigen/Geometry>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <limits>
 #include <kdl_parser/kdl_parser.hpp>
 #include <urdf/model.h>
@@ -40,41 +39,39 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace TRAC_IK
 {
 
-TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param, double _maxtime, double _eps, SolveType _type) :
+  TRAC_IK::TRAC_IK(rclcpp::Node::SharedPtr nh, const std::string& base_link, const std::string& tip_link, const std::string& URDF_param, double _maxtime, double _eps, SolveType _type) :
+  nh_(nh),
   initialized(false),
   eps(_eps),
   maxtime(_maxtime),
   solvetype(_type)
 {
 
-  ros::NodeHandle node_handle("~");
-
   urdf::Model robot_model;
   std::string xml_string;
 
-  std::string urdf_xml, full_urdf_xml;
-  node_handle.param("urdf_xml", urdf_xml, URDF_param);
-  node_handle.searchParam(urdf_xml, full_urdf_xml);
-
-  ROS_DEBUG_NAMED("trac_ik", "Reading xml file from parameter server");
-  if (!node_handle.getParam(full_urdf_xml, xml_string))
+  if(!nh_->has_parameter(URDF_param))
+    xml_string = nh_->declare_parameter(URDF_param, std::string(""));
+  else
+    nh_->get_parameter(URDF_param, xml_string);
+  
+  if(xml_string.empty())
   {
-    ROS_FATAL_NAMED("trac_ik", "Could not load the xml from parameter server: %s", urdf_xml.c_str());
+    RCLCPP_FATAL(nh_->get_logger(), "Could not load the xml from parameter: %s", URDF_param.c_str());
     return;
   }
 
-  node_handle.param(full_urdf_xml, xml_string, std::string());
   robot_model.initString(xml_string);
 
-  ROS_DEBUG_STREAM_NAMED("trac_ik", "Reading joints and links from URDF");
+  RCLCPP_DEBUG_STREAM(nh_->get_logger(), "Reading joints and links from URDF");
 
   KDL::Tree tree;
 
   if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
-    ROS_FATAL("Failed to extract kdl tree from xml robot description");
+    RCLCPP_FATAL(nh_->get_logger(), "Failed to extract kdl tree from xml robot description");
 
   if (!tree.getChain(base_link, tip_link, chain))
-    ROS_FATAL("Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
+    RCLCPP_FATAL(nh_->get_logger(), "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
 
   std::vector<KDL::Segment> chain_segs = chain.segments;
 
@@ -122,7 +119,7 @@ TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, cons
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      ROS_DEBUG_STREAM_NAMED("trac_ik", "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      RCLCPP_DEBUG_STREAM(nh_->get_logger(), "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
     }
   }
 
@@ -130,7 +127,8 @@ TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, cons
 }
 
 
-TRAC_IK::TRAC_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, SolveType _type):
+  TRAC_IK::TRAC_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, SolveType _type):
+  nh_(nh),
   initialized(false),
   chain(_chain),
   lb(_q_min),
@@ -149,7 +147,7 @@ void TRAC_IK::initialize()
   assert(chain.getNrOfJoints() == ub.data.size());
 
   jacsolver.reset(new KDL::ChainJntToJacSolver(chain));
-  nl_solver.reset(new NLOPT_IK::NLOPT_IK(chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
+  nl_solver.reset(new NLOPT_IK::NLOPT_IK(nh_, chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
   iksolver.reset(new KDL::ChainIkSolverPos_TL(chain, lb, ub, maxtime, eps, true, true));
 
   for (uint i = 0; i < chain.segments.size(); i++)
@@ -233,13 +231,10 @@ bool TRAC_IK::runSolver(T1& solver, T2& other_solver,
   double fulltime = maxtime;
   KDL::JntArray seed = q_init;
 
-  boost::posix_time::time_duration timediff;
-  double time_left;
-
   while (true)
   {
-    timediff = boost::posix_time::microsec_clock::local_time() - start_time;
-    time_left = fulltime - timediff.total_nanoseconds() / 1000000000.0;
+    auto timediff = system_clock.now() - start_time;
+    auto time_left = fulltime - timediff.seconds();
 
     if (time_left <= 0)
       break;
@@ -417,12 +412,12 @@ int TRAC_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL:
 
   if (!initialized)
   {
-    ROS_ERROR("TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
+    RCLCPP_ERROR(nh_->get_logger(), "TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
     return -1;
   }
 
 
-  start_time = boost::posix_time::microsec_clock::local_time();
+  start_time = system_clock.now();
 
   nl_solver->reset();
   iksolver->reset();
